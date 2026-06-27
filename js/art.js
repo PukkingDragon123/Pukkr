@@ -49,6 +49,15 @@
       ctx.restore();
       return true;
     },
+
+    // Draw a "creature in a jar" centred on cx with its base at bottomY.
+    drawJar: function (ctx, sid, cx, bottomY, h) {
+      var im = this.jarImg(sid);
+      if (!im) return false;
+      var w = (im.naturalWidth / im.naturalHeight) * h;
+      ctx.drawImage(im, Math.round(cx - w / 2), Math.round(bottomY - h), Math.round(w), Math.round(h));
+      return w;
+    },
   };
 
 })(window.PB = window.PB || {});

@@ -22,15 +22,14 @@
       entity = e;
       sp = PB.speciesById[e.sid];
       var sk = sp.skittish || 0;
-      // keep a forgiving floor so rare/skittish bugs stay catchable with the Old Net
-      zoneW = Math.max(0.16, Math.min(0.9, PB.netZone() * (1 - sk * 0.35)));
+      zoneW = PB.catchZone(sk);
       zoneStart = Math.random() * (1 - zoneW);
       pos = 0; dir = 1;
       speed = 0.85 + sk * 1.25;
       attempts = 3;
       active = true;
       cooldown = 0.15;
-      PB.markSeen(sp.id);
+      PB.dexEntry(sp.id); // mark discovered
       PB.audio.swing();
       PB.ui.openCatch(sp, zoneStart, zoneW, attempts);
     },

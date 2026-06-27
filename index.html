@@ -4,42 +4,36 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Poke Bug — A Cozy Bug Collecting Game</title>
-  <meta name="description" content="A cozy 2D bug-collecting fan game. Net wild bug Pokémon, raise them in jars, and open a museum to delight your friends." />
+  <meta name="description" content="A cozy 2D bug-collecting fan game. Catch bugs in the Woods, raise them in jars in your Garden, and display them in your Museum." />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
   <div id="game-frame">
-    <!-- The main render surface, at a smooth (non-pixelated) resolution. -->
     <canvas id="screen" width="960" height="540"></canvas>
 
-    <!-- DOM-based UI layers sit on top of the canvas -->
     <div id="ui-layer">
       <!-- Heads up display -->
       <div id="hud" class="hud hidden">
-        <div class="hud-pill" id="hud-clock"><span class="hud-icon">🕑</span><span id="clock-text">Day 1 · 8:00</span></div>
-        <div class="hud-pill" id="hud-candy"><span class="hud-icon">🍬</span><span id="candy-text">0</span></div>
-        <div class="hud-pill" id="hud-jar"><span class="hud-icon">🫙</span><span id="jar-text">0/8</span></div>
-        <div class="hud-pill" id="hud-net"><span class="hud-icon">🪤</span><span id="net-text">Old Net</span></div>
+        <div class="hud-pill"><span class="hud-icon">🕑</span><span id="clock-text">Day 1 · 8:00</span></div>
+        <div class="hud-pill"><span class="hud-icon">🍬</span><span id="candy-text">0</span></div>
+        <div class="hud-pill"><span class="hud-icon">🏛</span><span id="dex-text">0/5</span></div>
       </div>
 
-      <!-- Current location name -->
       <div id="loc-label" class="loc-label hidden"></div>
-
-      <!-- Contextual hint -->
       <div id="prompt" class="prompt hidden"></div>
-
-      <!-- Floating toast notifications -->
       <div id="toasts" class="toasts"></div>
 
-      <!-- Bottom navigation bar -->
+      <!-- Museum controls (only shown in the Museum) -->
+      <div id="museum-bar" class="museum-bar hidden">
+        <div class="mb-info" id="mb-info"></div>
+        <button class="btn-small honey" id="mb-invite">🔔 Open the doors</button>
+      </div>
+
+      <!-- Bottom navigation: the three places -->
       <div id="navbar" class="navbar hidden">
-        <button data-nav="garden"><span class="nav-em">🌷</span><span>Garden</span></button>
-        <button data-nav="forest"><span class="nav-em">🌳</span><span>Woods</span></button>
-        <button data-nav="jar"><span class="nav-em">🎒</span><span>Satchel</span></button>
-        <button data-nav="terrarium"><span class="nav-em">🫙</span><span>Jars</span></button>
-        <button data-nav="bugdex"><span class="nav-em">📖</span><span>Bugdex</span></button>
-        <button data-nav="museum"><span class="nav-em">🏛</span><span>Museum</span></button>
-        <button data-nav="shop"><span class="nav-em">🛒</span><span>Shop</span></button>
+        <button data-nav="forest"><span class="nav-em">🌳</span><span>Forest</span><small>catch</small></button>
+        <button data-nav="garden"><span class="nav-em">🌷</span><span>Garden</span><small>raise</small></button>
+        <button data-nav="museum"><span class="nav-em">🏛</span><span>Museum</span><small>display</small></button>
       </div>
 
       <!-- Catch mini-game overlay -->
@@ -51,20 +45,24 @@
             <div class="catch-zone" id="catch-zone"></div>
             <div class="catch-marker" id="catch-marker"></div>
           </div>
-          <div class="catch-hint">Press <kbd>Space</kbd> when the marker is in the green zone!</div>
+          <div class="catch-hint">Press <kbd>Space</kbd> or tap when the marker is in the green zone!</div>
           <div class="catch-attempts" id="catch-attempts"></div>
         </div>
       </div>
 
-      <!-- Generic full panel used by menus (collection, terrarium, museum, shop) -->
-      <div id="panel" class="panel hidden">
-        <div class="panel-window">
-          <div class="panel-header">
-            <span id="panel-title">Menu</span>
-            <button class="panel-close" id="panel-close" aria-label="Close">✕</button>
+      <!-- Feed / manage card (opens when you tap a jar in the Garden) -->
+      <div id="feedcard" class="overlay hidden">
+        <div class="feed-box">
+          <button class="panel-close" id="feed-close" aria-label="Close">✕</button>
+          <div class="feed-art" id="feed-art"></div>
+          <div class="feed-name" id="feed-name"></div>
+          <div class="feed-sub" id="feed-sub"></div>
+          <div class="bar love"><span id="feed-love"></span></div>
+          <div class="feed-feeds" id="feed-feeds"></div>
+          <div class="feed-actions">
+            <button class="btn-small" id="feed-display">🏛 Display in Museum</button>
+            <button class="btn-small berry" id="feed-release">💔 Release</button>
           </div>
-          <div class="panel-tabs" id="panel-tabs"></div>
-          <div class="panel-body" id="panel-body"></div>
         </div>
       </div>
 
@@ -88,14 +86,11 @@
         <div class="help-box">
           <h2>How to Play</h2>
           <ul>
-            <li><b>Catch</b> — <b>click or tap</b> any creature drifting through a scene to swing your net. (Or press <kbd>Space</kbd> to net the nearest one.)</li>
-            <li>Time the <b>catch meter</b> — stop the marker in the green zone. Better nets make the zone bigger; rare creatures are trickier.</li>
-            <li><b>Travel</b> between the <b>Garden</b> and the <b>Woods</b> with the bottom bar (or <kbd>1</kbd>/<kbd>2</kbd>). Different creatures appear in each place and at different <b>times of day</b>.</li>
-            <li><b>Raise</b> caught creatures in your <b>Jars</b> — feed them to raise their Love, earn <b>candy</b>, and watch them <b>evolve</b>.</li>
-            <li><b>Donate</b> creatures to the <b>Museum</b>, then open the doors so friends visit and reward you with candy.</li>
-            <li>Spend candy at the <b>Shop</b> on better nets, jars, lures and food.</li>
-            <li>Menus: <kbd>C</kbd> Bugdex · <kbd>J</kbd> Satchel · <kbd>R</kbd> Jars · <kbd>M</kbd> Museum · <kbd>B</kbd> Shop.</li>
-            <li>Your game <b>auto-saves</b>. Press <kbd>Esc</kbd> to close a window — and <kbd>H</kbd> any time to see this help again.</li>
+            <li>🌳 <b>Forest</b> — <b>click or tap</b> a creature drifting by to net it. Time the meter into the green zone.</li>
+            <li>🌷 <b>Garden</b> — your creatures live here in jars. Tap a jar to <b>feed</b> it (with candy) and raise its <b>Love</b>; happy creatures drip candy back.</li>
+            <li>🏛 <b>Museum</b> — from a Garden jar, choose <b>Display in Museum</b>. Then <b>open the doors</b> and friends visit with candy — more when an exhibit matches the habitat they love.</li>
+            <li>Switch places with the bottom bar (or <kbd>1</kbd>/<kbd>2</kbd>/<kbd>3</kbd>). There's a gentle day/night cycle — fireflies come out at night.</li>
+            <li>Your game <b>auto-saves</b>. <kbd>Esc</kbd> closes a window; <kbd>H</kbd> shows this help.</li>
           </ul>
           <button class="btn-primary" id="btn-help-close">Got it!</button>
         </div>
@@ -103,22 +98,18 @@
     </div>
   </div>
 
-  <!-- Plain global scripts, loaded in dependency order so the game runs directly
-       from the file system (file://) with no build step or server required. -->
   <script src="js/data.js"></script>
   <script src="js/art.js"></script>
   <script src="js/audio.js"></script>
   <script src="js/save.js"></script>
   <script src="js/state.js"></script>
-  <script src="js/sprites.js"></script>
   <script src="js/time.js"></script>
   <script src="js/scene.js"></script>
   <script src="js/spawns.js"></script>
   <script src="js/catching.js"></script>
   <script src="js/collection.js"></script>
-  <script src="js/terrarium.js"></script>
+  <script src="js/raise.js"></script>
   <script src="js/museum.js"></script>
-  <script src="js/shop.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/input.js"></script>
   <script src="js/fx.js"></script>
