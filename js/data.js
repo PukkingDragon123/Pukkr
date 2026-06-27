@@ -21,12 +21,8 @@
   "use strict";
 
   PB.config = {
-    TILE: 16,
-    VIEW_W: 480,
-    VIEW_H: 270,
-    MAP_W: 56,           // world size in tiles
-    MAP_H: 42,
-    PLAYER_SPEED: 1.35,  // base tiles-ish per frame unit (scaled by shoes)
+    VIEW_W: 960,         // internal render resolution (smooth, not pixelated)
+    VIEW_H: 540,
     DAY_LENGTH_SEC: 240, // real seconds for a full in-game day
     START_HOUR: 8,
     AUTOSAVE_SEC: 20,
@@ -238,14 +234,14 @@
         { name: "Golden Net",  cost: 1100, zone: 0.80 },
       ],
     },
-    shoes: {
-      name: "Shoes", icon: "👟",
-      desc: "Comfier shoes let you stroll the meadow a little faster.",
+    whistle: {
+      name: "Bug Whistle", icon: "🎺",
+      desc: "A soft whistle that coaxes more creatures out to visit at once.",
       tiers: [
-        { name: "Sandals",       cost: 0,   speed: 1.0 },
-        { name: "Trail Shoes",   cost: 50,  speed: 1.2 },
-        { name: "Spring Boots",  cost: 160, speed: 1.4 },
-        { name: "Breeze Runners",cost: 380, speed: 1.65 },
+        { name: "No Whistle",   cost: 0,   crowd: 9 },
+        { name: "Reed Whistle", cost: 80,  crowd: 12 },
+        { name: "Wooden Flute", cost: 220, crowd: 15 },
+        { name: "Silver Flute", cost: 520, crowd: 19 },
       ],
     },
     jar: {

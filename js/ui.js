@@ -86,8 +86,7 @@
     // ---- catch overlay -----------------------------------------------------
     openCatch: function (sp, zoneStart, zoneW, attempts) {
       el.catchTitle.textContent = "A wild " + sp.name + "!";
-      var cls = hasRealArt(sp.id) ? "catch-art" : "catch-art pixel";
-      el.catchBug.innerHTML = '<img class="' + cls + '" src="' + art(sp.id, 120, true, "creature") + '" alt="">';
+      el.catchBug.innerHTML = '<img class="catch-art" src="' + art(sp.id, 160, true, "creature") + '" alt="">';
       this.setCatchZone(zoneStart, zoneW);
       this.setCatchMarker(0);
       el.catchAttempts.textContent = PB.rarity[sp.rarity].star + " " + PB.rarity[sp.rarity].label;
@@ -131,14 +130,14 @@
 
   // ---- tab bar -------------------------------------------------------------
   var TABS = [
-    { id: "bugdex", label: "🐛 Bugdex" },
-    { id: "jar", label: "🫙 Jar" },
-    { id: "terrarium", label: "🌿 Raise" },
+    { id: "bugdex", label: "📖 Bugdex" },
+    { id: "jar", label: "🎒 Satchel" },
+    { id: "terrarium", label: "🫙 Jars" },
     { id: "museum", label: "🏛 Museum" },
     { id: "shop", label: "🛒 Shop" },
   ];
   var TAB_TITLES = {
-    bugdex: "Bugdex", jar: "Your Jars", terrarium: "Terrarium",
+    bugdex: "Bugdex", jar: "Your Satchel", terrarium: "Raising Jars",
     museum: "Bug Museum", shop: "Tool Stall",
   };
 
@@ -170,8 +169,8 @@
   function handleAction(action, idx, arg) {
     switch (action) {
       case "raise": {
-        if (PB.terrarium.full()) { PB.ui.toast("Terrarium is full — upgrade it in the Shop.", ""); break; }
-        if (PB.terrarium.intake(idx)) { PB.audio.select(); PB.ui.toast("Moved to your terrarium to raise. 🌱", "good"); }
+        if (PB.terrarium.full()) { PB.ui.toast("All your raising jars are full — get more in the Shop.", ""); break; }
+        if (PB.terrarium.intake(idx)) { PB.audio.select(); PB.ui.toast("Popped into a jar to raise! 🫙", "good"); }
         break;
       }
       case "release": {
@@ -262,8 +261,8 @@
     jar: function () {
       var jar = PB.state.jar;
       var head = '<div class="section-note">Carrying <b>' + jar.length + "/" + PB.jarCapacity() +
-        "</b> bugs. <b>Raise</b> them at home, <b>donate</b> them at the Museum tab, or <b>release</b> for a little candy.</div>";
-      if (!jar.length) return head + '<div class="empty-note">Your jars are empty.<br>Go swing your net at a wild bug! 🪤</div>';
+        "</b> creatures. <b>Raise</b> them in Jars, <b>donate</b> them at the Museum, or <b>release</b> for a little candy.</div>";
+      if (!jar.length) return head + '<div class="empty-note">Your satchel is empty.<br>Go click a creature in the Garden or Woods! 🪤</div>';
       var rows = jar.map(function (bug, i) {
         var sp = PB.speciesById[bug.sid];
         return row(bug.sid, sp.name, PB.rarity[sp.rarity].label + " · " + bug.size + " mm",
@@ -276,9 +275,9 @@
     terrarium: function () {
       var pods = PB.state.terrarium;
       var head = '<div class="section-note">Raising <b>' + pods.length + "/" + PB.terrariumCapacity() +
-        "</b> bugs. Feed them to raise <b>Love</b> — happy bugs drip <b>candy</b>, and well-loved bugs can <b>evolve</b>. " +
-        "Add bugs from the <b>Jar</b> tab.</div>";
-      if (!pods.length) return head + '<div class="empty-note">No bugs are being raised yet.<br>Catch a bug, then press <b>Raise</b> in the Jar tab. 🌿</div>';
+        "</b> creatures in jars. Feed them to raise <b>Love</b> — happy creatures drip <b>candy</b>, and well-loved ones can <b>evolve</b>. " +
+        "Add creatures from the <b>Satchel</b> tab.</div>";
+      if (!pods.length) return head + '<div class="empty-note">No creatures in your jars yet.<br>Catch one, then press <b>Raise</b> in the Satchel tab. 🫙</div>';
       var feedBtns = PB.feeds.map(function (f) { return f; });
       var rows = pods.map(function (pod, i) {
         var sp = PB.speciesById[pod.sid];
@@ -319,8 +318,8 @@
 
       // donate from jar
       var jar = PB.state.jar;
-      var donateBlock = "<h3 style='margin:14px 0 8px'>Donate from your jar</h3>";
-      if (!jar.length) donateBlock += '<div class="empty-note">No bugs to donate. Catch some first! 🫙</div>';
+      var donateBlock = "<h3 style='margin:14px 0 8px'>Donate from your satchel</h3>";
+      if (!jar.length) donateBlock += '<div class="empty-note">No creatures to donate. Catch some first! 🫙</div>';
       else donateBlock += jar.map(function (bug, i) {
         var sp = PB.speciesById[bug.sid];
         var already = PB.museum.has(bug.sid);
@@ -347,7 +346,7 @@
 
     shop: function () {
       var head = '<div class="section-note">You have <b>' + PB.state.candy + " 🍬</b>. Spend candy on better gear and tasty bug food.</div>";
-      var toolKeys = ["net", "shoes", "jar", "terrarium", "lure"];
+      var toolKeys = ["net", "whistle", "jar", "terrarium", "lure"];
       var tools = toolKeys.map(function (key) {
         var t = PB.tools[key];
         var cur = PB.toolTier(key);

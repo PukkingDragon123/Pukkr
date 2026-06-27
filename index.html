@@ -9,8 +9,8 @@
 </head>
 <body>
   <div id="game-frame">
-    <!-- The main render surface. Internal resolution is low for a pixel-art look. -->
-    <canvas id="screen" width="480" height="270"></canvas>
+    <!-- The main render surface, at a smooth (non-pixelated) resolution. -->
+    <canvas id="screen" width="960" height="540"></canvas>
 
     <!-- DOM-based UI layers sit on top of the canvas -->
     <div id="ui-layer">
@@ -22,21 +22,24 @@
         <div class="hud-pill" id="hud-net"><span class="hud-icon">🪤</span><span id="net-text">Old Net</span></div>
       </div>
 
-      <!-- Contextual action prompt near the player -->
+      <!-- Current location name -->
+      <div id="loc-label" class="loc-label hidden"></div>
+
+      <!-- Contextual hint -->
       <div id="prompt" class="prompt hidden"></div>
 
       <!-- Floating toast notifications -->
       <div id="toasts" class="toasts"></div>
 
-      <!-- On-screen controls, shown only on touch devices -->
-      <div id="touch">
-        <div class="tc-dpad">
-          <button class="tc-btn tc-up" data-dir="up" aria-label="Up">▲</button>
-          <button class="tc-btn tc-left" data-dir="left" aria-label="Left">◀</button>
-          <button class="tc-btn tc-right" data-dir="right" aria-label="Right">▶</button>
-          <button class="tc-btn tc-down" data-dir="down" aria-label="Down">▼</button>
-        </div>
-        <button class="tc-act" id="tc-act" aria-label="Swing / Interact">🪤</button>
+      <!-- Bottom navigation bar -->
+      <div id="navbar" class="navbar hidden">
+        <button data-nav="garden"><span class="nav-em">🌷</span><span>Garden</span></button>
+        <button data-nav="forest"><span class="nav-em">🌳</span><span>Woods</span></button>
+        <button data-nav="jar"><span class="nav-em">🎒</span><span>Satchel</span></button>
+        <button data-nav="terrarium"><span class="nav-em">🫙</span><span>Jars</span></button>
+        <button data-nav="bugdex"><span class="nav-em">📖</span><span>Bugdex</span></button>
+        <button data-nav="museum"><span class="nav-em">🏛</span><span>Museum</span></button>
+        <button data-nav="shop"><span class="nav-em">🛒</span><span>Shop</span></button>
       </div>
 
       <!-- Catch mini-game overlay -->
@@ -85,16 +88,14 @@
         <div class="help-box">
           <h2>How to Play</h2>
           <ul>
-            <li><b>Move</b> with <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or the arrow keys.</li>
-            <li><b>Interact / Swing net</b> with <kbd>Space</kbd>, <kbd>E</kbd> or <kbd>Enter</kbd>. Walk up to a wandering bug and swing!</li>
-            <li>Time the <b>catch meter</b> — stop the marker in the green zone. Better nets make the zone bigger.</li>
-            <li>Open menus: <kbd>C</kbd> Bugdex · <kbd>J</kbd> Jar · <kbd>R</kbd> Terrarium · <kbd>M</kbd> Museum · <kbd>B</kbd> Shop.</li>
-            <li><b>Raise</b> bugs in your terrarium at home — they grow happier and drip <b>candy</b>.</li>
-            <li><b>Donate</b> bugs to the <b>Museum</b>. Friends visit and reward you with candy and praise.</li>
-            <li>Spend candy at the <b>Shop</b> to upgrade your net, shoes, lures and more.</li>
-            <li>Different bugs come out at different <b>times of day</b> and in different <b>places</b>. Explore!</li>
-            <li>Your game <b>auto-saves</b>. Press <kbd>Esc</kbd> to close any window — and <kbd>H</kbd> any time to see this help again.</li>
-            <li>On a phone or tablet? On-screen controls appear automatically. 🐛</li>
+            <li><b>Catch</b> — <b>click or tap</b> any creature drifting through a scene to swing your net. (Or press <kbd>Space</kbd> to net the nearest one.)</li>
+            <li>Time the <b>catch meter</b> — stop the marker in the green zone. Better nets make the zone bigger; rare creatures are trickier.</li>
+            <li><b>Travel</b> between the <b>Garden</b> and the <b>Woods</b> with the bottom bar (or <kbd>1</kbd>/<kbd>2</kbd>). Different creatures appear in each place and at different <b>times of day</b>.</li>
+            <li><b>Raise</b> caught creatures in your <b>Jars</b> — feed them to raise their Love, earn <b>candy</b>, and watch them <b>evolve</b>.</li>
+            <li><b>Donate</b> creatures to the <b>Museum</b>, then open the doors so friends visit and reward you with candy.</li>
+            <li>Spend candy at the <b>Shop</b> on better nets, jars, lures and food.</li>
+            <li>Menus: <kbd>C</kbd> Bugdex · <kbd>J</kbd> Satchel · <kbd>R</kbd> Jars · <kbd>M</kbd> Museum · <kbd>B</kbd> Shop.</li>
+            <li>Your game <b>auto-saves</b>. Press <kbd>Esc</kbd> to close a window — and <kbd>H</kbd> any time to see this help again.</li>
           </ul>
           <button class="btn-primary" id="btn-help-close">Got it!</button>
         </div>
@@ -111,8 +112,7 @@
   <script src="js/state.js"></script>
   <script src="js/sprites.js"></script>
   <script src="js/time.js"></script>
-  <script src="js/world.js"></script>
-  <script src="js/player.js"></script>
+  <script src="js/scene.js"></script>
   <script src="js/spawns.js"></script>
   <script src="js/catching.js"></script>
   <script src="js/collection.js"></script>
@@ -121,7 +121,6 @@
   <script src="js/shop.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/input.js"></script>
-  <script src="js/touch.js"></script>
   <script src="js/fx.js"></script>
   <script src="js/main.js"></script>
 </body>

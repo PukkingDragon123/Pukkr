@@ -1,18 +1,13 @@
 /* ===========================================================================
-   spawns.js — wild bugs that wander the world by biome and time of day.
-   Maintains a small living population; bugs drift, hop, and skittish ones
-   flee when you get close. The catch mini-game pulls a bug out of here.
+   spawns.js — creatures that drift across the current location. There is no
+   player; you simply click/tap a creature to try to catch it. Which creatures
+   appear depends on the location (Garden vs Woods) and the time of day.
    =========================================================================== */
 (function (PB) {
   "use strict";
 
-  var TARGET = 16;        // how many wild bugs roam at once
   var entities = [];
-  var rand = Math.random; // world spawn variety can be non-deterministic
-
-  function eligible(period) {
-    return PB.species.filter(function (s) { return s.times.indexOf(period) >= 0; });
-  }
+  var rand = Math.random;
 
   function weightedPick(list) {
     var total = 0, i;
@@ -26,7 +21,7 @@
   }
 
   function pickSpecies(period) {
-    var pool = eligible(period);
+    var pool = PB.scene.pool(period);
     if (!pool.length) return null;
     var lure = PB.lureRare();
     if (lure > 0 && rand() < lure) {
@@ -39,22 +34,25 @@
   function spawnOne(period) {
     var sp = pickSpecies(period);
     if (!sp) return;
-    var biome = sp.biomes[Math.floor(rand() * sp.biomes.length)];
-    var spot = PB.world.randomSpotInBiome(biome, rand);
-    if (!spot) return;
+    var b = PB.scene.bounds();
+    var winged = sp.look && sp.look.wings && sp.look.wings !== "none";
+    var y = b.y0 + rand() * (b.y1 - b.y0) * (winged ? 0.8 : 1);
     entities.push({
       sid: sp.id,
-      x: spot.x, y: spot.y,
-      hx: spot.x, hy: spot.y,          // home anchor (drift back toward it)
-      tx: spot.x, ty: spot.y,          // wander target
-      vx: 0, vy: 0,
-      face: 1,
+      x: b.x0 + 20 + rand() * (b.x1 - b.x0 - 40),
+      baseY: y,
+      y: y,
+      dirX: rand() < 0.5 ? -1 : 1,
+      speed: 8 + rand() * 14 + (sp.skittish || 0) * 12,
+      bobAmp: winged ? 10 + rand() * 8 : 3 + rand() * 3,
+      bobSpd: winged ? 3 + rand() * 2 : 1.5 + rand(),
+      phase: rand() * Math.PI * 2,
       t: rand() * 100,
-      hop: rand() * Math.PI * 2,
-      retarget: 0,
-      life: 18 + rand() * 18,          // seconds before it naturally wanders off
-      biome: biome,
-      flee: 0,
+      face: 1,
+      life: 14 + rand() * 16,
+      alpha: 0,
+      state: "in",
+      retarget: 1 + rand() * 2,
     });
   }
 
@@ -64,105 +62,73 @@
 
     update: function (dt) {
       var period = PB.time.period();
-      var p = PB.state.player;
+      var b = PB.scene.bounds();
 
       for (var i = entities.length - 1; i >= 0; i--) {
         var e = entities[i];
         var sp = PB.speciesById[e.sid];
         e.t += dt * 60;
-        e.hop += dt * (4 + (sp.skittish || 0) * 6);
+        e.phase += dt * e.bobSpd;
         e.life -= dt;
 
-        // pick a new wander target now and then
+        // fade in / out
+        if (e.state === "in") { e.alpha = Math.min(1, e.alpha + dt * 2.5); if (e.alpha >= 1) e.state = "live"; }
+        else if (e.state === "out") { e.alpha -= dt * 2.2; if (e.alpha <= 0) { entities.splice(i, 1); continue; } }
+
+        // gentle wandering
         e.retarget -= dt;
-        if (e.retarget <= 0) {
-          e.retarget = 1.4 + rand() * 2.2;
-          var rad = 26 + rand() * 26;
-          var ang = rand() * Math.PI * 2;
-          e.tx = e.hx + Math.cos(ang) * rad;
-          e.ty = e.hy + Math.sin(ang) * rad;
-        }
+        if (e.retarget <= 0) { e.retarget = 1.5 + rand() * 2.5; if (rand() < 0.4) e.dirX *= -1; }
+        e.x += e.dirX * e.speed * dt;
+        if (e.x < b.x0) { e.x = b.x0; e.dirX = 1; }
+        if (e.x > b.x1) { e.x = b.x1; e.dirX = -1; }
+        e.face = e.dirX < 0 ? -1 : 1;
+        e.y = e.baseY + Math.sin(e.phase) * e.bobAmp;
 
-        // flee from the player if skittish and close
-        var dxp = e.x - p.x, dyp = e.y - p.y;
-        var distP = Math.hypot(dxp, dyp);
-        var sk = sp.skittish || 0;
-        if (sk > 0.1 && distP < 46) {
-          e.flee = 1;
-          var fl = (1 / Math.max(distP, 6));
-          e.tx = e.x + dxp * fl * 60;
-          e.ty = e.y + dyp * fl * 60;
-        } else if (e.flee > 0) {
-          e.flee = Math.max(0, e.flee - dt);
-        }
-
-        // move toward target
-        var dx = e.tx - e.x, dy = e.ty - e.y;
-        var d = Math.hypot(dx, dy) || 1;
-        var spd = (10 + sk * 22 + e.flee * 34) * dt;
-        var stepx = (dx / d) * spd, stepy = (dy / d) * spd;
-        // avoid walking into solids (except pond bugs over water)
-        var nx = e.x + stepx, ny = e.y + stepy;
-        var blocked = PB.world.isSolid(nx, ny) && e.biome !== "pond";
-        if (!blocked) {
-          e.x = nx; e.y = ny;
-          if (Math.abs(stepx) > 0.05) e.face = stepx < 0 ? -1 : 1;
-        } else {
-          e.retarget = 0; // bounce: choose a new target next frame
-        }
-
-        // keep within map
-        e.x = Math.max(8, Math.min(PB.world.pxW - 8, e.x));
-        e.y = Math.max(8, Math.min(PB.world.pxH - 8, e.y));
-
-        // despawn when its time is up, or it no longer belongs to this period,
-        // but only when it's comfortably off-screen so it never pops away in view.
-        var onScreen = PB.main && PB.main.onScreen(e.x, e.y, 40);
-        var wrongTime = sp.times.indexOf(period) < 0;
-        if ((e.life <= 0 || wrongTime) && !onScreen) {
-          entities.splice(i, 1);
-        }
+        // time-of-day change or natural lifetime → drift away
+        if (e.state === "live" && (e.life <= 0 || sp.times.indexOf(period) < 0)) e.state = "out";
       }
 
-      // top up the population
+      var target = PB.crowdSize();
       var guard = 0;
-      while (entities.length < TARGET && guard++ < 6) spawnOne(period);
+      while (entities.length < target && guard++ < 4) spawnOne(period);
     },
 
-    draw: function (ctx, camX, camY) {
-      // back-to-front by y for gentle depth
-      var vis = entities.slice().sort(function (a, b) { return a.y - b.y; });
+    draw: function (ctx) {
+      var vis = entities.slice().sort(function (a, b) { return a.baseY - b.baseY; });
       for (var i = 0; i < vis.length; i++) {
         var e = vis[i];
-        var sx = e.x - camX, sy = e.y - camY;
-        if (sx < -24 || sx > PB.config.VIEW_W + 24 || sy < -24 || sy > PB.config.VIEW_H + 24) continue;
         var sp = PB.speciesById[e.sid];
-        var hop = Math.abs(Math.sin(e.hop)) * 3;
         var hasArt = PB.art.has(e.sid) && PB.art.creatureImg(e.sid);
-        // shadow (wider for the chunkier hand-drawn art)
-        ctx.fillStyle = "rgba(0,0,0,0.16)";
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, Math.min(1, e.alpha));
+        // soft shadow on the ground (at baseY, not the bobbing y)
+        ctx.fillStyle = "rgba(40,40,30,0.18)";
         ctx.beginPath();
-        ctx.ellipse(sx, sy + 2, hasArt ? 9 : 6, hasArt ? 3 : 2.4, 0, 0, Math.PI * 2);
+        ctx.ellipse(e.x, e.baseY + (hasArt ? 40 : 22), hasArt ? 30 : 20, hasArt ? 9 : 7, 0, 0, Math.PI * 2);
         ctx.fill();
         if (hasArt) {
-          PB.art.drawCreature(ctx, e.sid, sx, sy + 2 - hop, 30, e.face < 0);
+          PB.art.drawCreature(ctx, e.sid, e.x, e.y + 44, 92, e.face < 0);
         } else {
           ctx.save();
-          // mirror around the bug's screen-x so it faces its travel direction
-          if (e.face < 0) { ctx.translate(sx * 2, 0); ctx.scale(-1, 1); }
-          PB.sprites.drawBug(ctx, sp.look, sx, sy - 5 - hop, 20, e.t);
+          if (e.face < 0) { ctx.translate(e.x * 2, 0); ctx.scale(-1, 1); }
+          PB.sprites.drawBug(ctx, sp.look, e.x, e.y, 66, e.t);
           ctx.restore();
         }
+        ctx.restore();
       }
     },
 
-    // nearest catchable bug to a world point, within radius px
-    nearestNear: function (px, py, radius) {
-      var best = null, bestD = radius * radius;
+    // topmost creature under a screen point (for click/tap to catch)
+    hitTest: function (px, py) {
+      var best = null, bestY = -Infinity;
       for (var i = 0; i < entities.length; i++) {
         var e = entities[i];
-        var dx = e.x - px, dy = e.y - py, d = dx * dx + dy * dy;
-        if (d < bestD) { best = e; bestD = d; }
+        if (e.state === "out") continue;
+        var hasArt = PB.art.has(e.sid);
+        var rx = hasArt ? 46 : 36, ry = hasArt ? 56 : 40;
+        var cx = e.x, cy = e.y + (hasArt ? 8 : -4);
+        var dx = (px - cx) / rx, dy = (py - cy) / ry;
+        if (dx * dx + dy * dy <= 1 && e.baseY > bestY) { best = e; bestY = e.baseY; }
       }
       return best;
     },
@@ -172,14 +138,8 @@
       if (i >= 0) entities.splice(i, 1);
     },
 
-    // when a catch fails, the bug bolts
-    scare: function (e) {
-      e.flee = 1.5;
-      e.life = Math.min(e.life, 1.2);
-      var p = PB.state.player;
-      e.tx = e.x + (e.x - p.x) * 3;
-      e.ty = e.y + (e.y - p.y) * 3;
-    },
+    // a failed catch: the creature darts away
+    scare: function (e) { e.state = "out"; e.speed += 40; },
   };
 
 })(window.PB = window.PB || {});

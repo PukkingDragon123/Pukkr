@@ -1,10 +1,11 @@
 # 🐛 Poke Bug
 
-A **cozy 2D bug-collecting fan game**. You're a gentle bug collector in a sunny
-meadow: net wild bug Pokémon, keep them in jars, raise them at home until they're
-happy (and maybe evolve!), and donate them to your own **museum**. Invite your
-friends to visit — they'll leave you **candy**, which you spend on better nets,
-comfier shoes, sweet lures and roomier jars.
+A **cozy 2D bug-collecting fan game** in a soft, hand-painted style. Visit two
+peaceful places — a **Sunny Garden** and the **Whispering Woods** — and simply
+**click or tap** the creatures drifting by to net them. Keep them in **jars**,
+feed them until they're happy (and maybe evolve!), and donate them to your own
+**museum**. Invite friends to visit and they'll leave you **candy**, which you
+spend on better nets, roomier jars, sweet lures and more.
 
 Inspired by laid-back bug-park collecting games. There's no failing and no rush —
 just a warm little world to potter around in.
@@ -24,29 +25,33 @@ Your game **auto-saves** to your browser's local storage.
 
 ## How to play
 
+Mostly you just **click / tap** creatures. The bottom bar handles everything else.
+
 | Action | Keys |
 | --- | --- |
-| Move | `W` `A` `S` `D` or arrow keys |
-| Swing net / interact | `Space` or `E` |
+| Catch a creature | **click / tap** it (or `Space` to net the nearest) |
+| Travel: Garden / Woods | `1` / `2` |
 | Bugdex | `C` |
-| Jar | `J` |
-| Raise (Terrarium) | `R` |
+| Satchel (carried) | `J` |
+| Jars (raising) | `R` |
 | Museum | `M` |
 | Shop | `B` |
+| Help | `H` |
 | Close a window | `Esc` |
 
-1. **Catch** — walk up to a wandering bug and swing your net. Time the meter so
-   the marker stops in the green zone. Better nets make the zone wider; rare and
-   skittish bugs are trickier.
-2. **Raise** — go **home** (the cabin) and move caught bugs into your terrarium.
-   Feed them to raise their **Love**; happy bugs slowly produce candy, and
-   well-loved bugs with an evolution line will **evolve**.
-3. **Museum** — donate bugs to create exhibits, then **open the doors** so friends
-   visit. They reward you with candy — more when your exhibits match the biomes
-   they love. Fill it out to climb from a *Curio Corner* to a *World Museum*.
-4. **Explore** — different bugs appear in different **places** (meadow, woods,
-   pond, flower patch, the old oak) and at different **times of day**. The world
-   has a gentle day/night cycle, so come back at night for the glowing bugs.
+1. **Catch** — click or tap any creature drifting through the scene. Time the
+   meter so the marker stops in the green zone. Better nets make the zone wider;
+   rare creatures are trickier.
+2. **Travel** — use the bottom bar to move between the **Sunny Garden** and the
+   **Whispering Woods**. Different creatures appear in each place and at different
+   **times of day** — there's a gentle day/night cycle, so visit at night for the
+   glowing ones.
+3. **Raise** — move caught creatures into your **Jars** and feed them to raise
+   their **Love**; happy creatures drip candy, and well-loved ones with an
+   evolution line will **evolve**.
+4. **Museum** — donate creatures to create exhibits, then **open the doors** so
+   friends visit. They reward you with candy — more when your exhibits match the
+   biomes they love. Climb from a *Curio Corner* to a *World Museum*.
 
 ## What's where
 
@@ -54,27 +59,25 @@ Your game **auto-saves** to your browser's local storage.
 index.html        # entry point; loads everything
 css/style.css     # the cozy look
 assets/
-  creatures/      # hand-drawn creature cut-outs (catch screen + overworld)
+  creatures/      # hand-drawn creature cut-outs (catch screen + scenes)
   jars/           # hand-drawn "creature in a jar" art (collection screens)
 js/
-  data.js         # all content: species, biomes, tools, friends
+  data.js         # all content: species, locations, tools, friends
   art.js          # registry/loader for the hand-drawn art
-  sprites.js      # procedural pixel-art + the glass-jar renderer
-  world.js        # the map, biomes, buildings, collision
-  player.js       # movement
-  spawns.js       # wild bugs roaming by biome & time
+  sprites.js      # procedural creatures + the glass-jar renderer
+  scene.js        # the painterly Garden & Woods backgrounds + locations
+  spawns.js       # creatures drifting through the current scene
   catching.js     # the catch mini-game
-  collection.js   # jar + Bugdex records
-  terrarium.js    # raising & evolving bugs
+  collection.js   # satchel + Bugdex records
+  terrarium.js    # raising & evolving creatures in jars
   museum.js       # exhibits & visiting friends
   shop.js         # upgrades & food
   time.js         # day/night cycle
   fx.js           # ambient pollen/fireflies, vignette, paper grain
   ui.js           # HUD, menus, toasts
   input.js        # keyboard
-  touch.js        # on-screen controls for phones/tablets
   audio.js        # tiny procedural sound effects
-  main.js         # boot, loop, camera, interaction
+  main.js         # boot, loop, scene render, click-to-catch, navigation
 ```
 
 ## Notes
@@ -85,5 +88,6 @@ names are © Nintendo / Creatures Inc. / GAME FREAK inc.
 A few creatures (Caterpie, Weedle, Paras, Shuckle and Wimpod) use original
 hand-drawn art under `assets/`; every other creature is drawn procedurally from
 simple shape descriptors, and even those are framed inside a drawn glass jar so
-the whole collection shares one cozy "bug in a jar" look. No original game assets
-are used.
+the whole collection shares one cozy "bug in a jar" look. The location
+backgrounds are painted procedurally with soft gradients and blobs. No original
+game assets are used.

@@ -15,9 +15,8 @@
       day: 1,
       timeSec: (cfg.START_HOUR / 24) * cfg.DAY_LENGTH_SEC, // 8:00 in seconds
       candy: 12,
-      tools: { net: 0, shoes: 0, jar: 0, terrarium: 0, lure: 0 },
+      tools: { net: 0, whistle: 0, jar: 0, terrarium: 0, lure: 0 },
       feedInv: { leaf: 3, berry: 0, honey: 0 },
-      player: { x: 28 * cfg.TILE, y: 32 * cfg.TILE, dir: "down" },
       jar: [],            // bugs currently carried in jars
       dex: {},            // sid -> { caught, seen, bestSize, donated }
       terrarium: [],      // bugs being raised: { sid, size, love, growth, candyBuf }
@@ -31,7 +30,7 @@
   PB.loadInto = function (data) {
     // Backfill anything a save might be missing so later reads never throw.
     data.tools = data.tools || {};
-    ["net", "shoes", "jar", "terrarium", "lure"].forEach(function (k) {
+    ["net", "whistle", "jar", "terrarium", "lure"].forEach(function (k) {
       if (typeof data.tools[k] !== "number") data.tools[k] = 0;
     });
     data.feedInv = data.feedInv || { leaf: 0, berry: 0, honey: 0 };
@@ -52,7 +51,6 @@
     if (typeof data.candy !== "number") data.candy = 0;
     if (typeof data.day !== "number") data.day = 1;
     if (typeof data.timeSec !== "number") data.timeSec = 0;
-    if (!data.player) data.player = { x: 21 * PB.config.TILE, y: 35 * PB.config.TILE, dir: "down" };
     PB.state = data;
     return data;
   };
@@ -66,7 +64,7 @@
   PB.jarCapacity = function () { return PB.toolTier("jar").slots; };
   PB.terrariumCapacity = function () { return PB.toolTier("terrarium").slots; };
   PB.netZone = function () { return PB.toolTier("net").zone; };
-  PB.shoeSpeed = function () { return PB.toolTier("shoes").speed; };
+  PB.crowdSize = function () { return PB.toolTier("whistle").crowd; };
   PB.lureRare = function () { return PB.toolTier("lure").rare; };
 
   // ---- Dex helpers ---------------------------------------------------------
