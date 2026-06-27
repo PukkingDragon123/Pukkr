@@ -138,14 +138,21 @@
         if (sx < -24 || sx > PB.config.VIEW_W + 24 || sy < -24 || sy > PB.config.VIEW_H + 24) continue;
         var sp = PB.speciesById[e.sid];
         var hop = Math.abs(Math.sin(e.hop)) * 3;
-        // shadow
+        var hasArt = PB.art.has(e.sid) && PB.art.creatureImg(e.sid);
+        // shadow (wider for the chunkier hand-drawn art)
         ctx.fillStyle = "rgba(0,0,0,0.16)";
-        ctx.beginPath(); ctx.ellipse(sx, sy + 2, 6, 2.4, 0, 0, Math.PI * 2); ctx.fill();
-        ctx.save();
-        // mirror around the bug's screen-x so it faces its travel direction
-        if (e.face < 0) { ctx.translate(sx * 2, 0); ctx.scale(-1, 1); }
-        PB.sprites.drawBug(ctx, sp.look, sx, sy - 5 - hop, 18, e.t);
-        ctx.restore();
+        ctx.beginPath();
+        ctx.ellipse(sx, sy + 2, hasArt ? 9 : 6, hasArt ? 3 : 2.4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        if (hasArt) {
+          PB.art.drawCreature(ctx, e.sid, sx, sy + 2 - hop, 30, e.face < 0);
+        } else {
+          ctx.save();
+          // mirror around the bug's screen-x so it faces its travel direction
+          if (e.face < 0) { ctx.translate(sx * 2, 0); ctx.scale(-1, 1); }
+          PB.sprites.drawBug(ctx, sp.look, sx, sy - 5 - hop, 20, e.t);
+          ctx.restore();
+        }
       }
     },
 

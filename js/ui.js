@@ -15,14 +15,24 @@
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) {
     return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]; }); }
 
-  function art(sid, px, discovered) {
-    var key = (discovered ? sid : "?") + "@" + px;
+  // Returns a URL for a species image. mode "jar" prefers the hand-drawn
+  // "creature in a jar" art (used in collection screens); mode "creature"
+  // prefers the standalone portrait (catch screen / title). Falls back to
+  // procedural art, and shows a mystery silhouette when undiscovered.
+  function art(sid, px, discovered, mode) {
+    mode = mode || "creature";
+    if (!discovered) {
+      var mk = "?@" + px;
+      return artCache[mk] || (artCache[mk] = PB.sprites.mysteryCanvas(px).toDataURL());
+    }
+    if (mode === "jar" && PB.art.jarURL(sid)) return PB.art.jarURL(sid);
+    if (mode === "creature" && PB.art.creatureURL(sid)) return PB.art.creatureURL(sid);
+    var key = mode + ":" + sid + "@" + px;
     if (artCache[key]) return artCache[key];
-    var cv = discovered ? PB.sprites.bugCanvas(sid, px) : PB.sprites.mysteryCanvas(px);
-    var url = cv.toDataURL();
-    artCache[key] = url;
-    return url;
+    var cv = mode === "jar" ? PB.sprites.jarCanvas(sid, px) : PB.sprites.bugCanvas(sid, px);
+    return (artCache[key] = cv.toDataURL());
   }
+  function hasRealArt(sid) { return PB.art.has(sid); }
 
   PB.ui = {
     init: function () {
@@ -76,7 +86,8 @@
     // ---- catch overlay -----------------------------------------------------
     openCatch: function (sp, zoneStart, zoneW, attempts) {
       el.catchTitle.textContent = "A wild " + sp.name + "!";
-      el.catchBug.innerHTML = '<img src="' + art(sp.id, 96, true) + '" width="96" height="96" alt="">';
+      var cls = hasRealArt(sp.id) ? "catch-art" : "catch-art pixel";
+      el.catchBug.innerHTML = '<img class="' + cls + '" src="' + art(sp.id, 120, true, "creature") + '" alt="">';
       this.setCatchZone(zoneStart, zoneW);
       this.setCatchMarker(0);
       el.catchAttempts.textContent = PB.rarity[sp.rarity].star + " " + PB.rarity[sp.rarity].label;
@@ -240,7 +251,7 @@
         return '<div class="card' + (locked ? " locked" : "") + '">' +
           (caughtCount > 1 ? '<span class="card-count">×' + caughtCount + "</span>" : "") +
           (badge ? '<span class="card-badge">' + badge + "</span>" : "") +
-          '<div class="card-art"><img src="' + art(sp.id, 64, discovered) + '" width="64" height="64" alt=""></div>' +
+          '<div class="card-art"><img src="' + art(sp.id, 72, discovered, "jar") + '" alt=""></div>' +
           '<div class="card-name">' + esc(name) + "</div>" +
           '<div class="card-sub">' + sub + (e.donated ? " · 🏛" : "") + "</div>" +
           "</div>";
@@ -326,8 +337,8 @@
       if (!keys.length) exhibits += '<div class="empty-note">No exhibits yet. Your first donation starts the collection! ✨</div>';
       else exhibits += '<div class="grid">' + keys.map(function (sid) {
         var sp = PB.speciesById[sid];
-        return '<div class="card"><div class="card-art"><img src="' + art(sid, 64, true) +
-          '" width="64" height="64" alt=""></div><div class="card-name">' + esc(sp.name) +
+        return '<div class="card"><div class="card-art"><img src="' + art(sid, 72, true, "jar") +
+          '" alt=""></div><div class="card-name">' + esc(sp.name) +
           '</div><div class="card-sub">' + donated[sid].size + " mm</div></div>";
       }).join("") + "</div>";
 
@@ -373,14 +384,14 @@
 
   // ---- small html helpers --------------------------------------------------
   function row(sid, title, desc, actionHtml) {
-    return '<div class="row"><div class="row-art"><img src="' + art(sid, 56, true) +
-      '" width="56" height="56" alt=""></div><div class="row-main"><div class="row-title">' +
+    return '<div class="row"><div class="row-art"><img src="' + art(sid, 64, true, "jar") +
+      '" alt=""></div><div class="row-main"><div class="row-title">' +
       esc(title) + '</div><div class="row-desc">' + desc + '</div></div>' +
       '<div class="row-action">' + actionHtml + "</div></div>";
   }
   function rowCustom(sid, mainHtml, actionHtml) {
-    return '<div class="row"><div class="row-art"><img src="' + art(sid, 56, true) +
-      '" width="56" height="56" alt=""></div><div class="row-main">' + mainHtml + "</div>" +
+    return '<div class="row"><div class="row-art"><img src="' + art(sid, 64, true, "jar") +
+      '" alt=""></div><div class="row-main">' + mainHtml + "</div>" +
       '<div class="row-action" style="text-align:center">' + actionHtml + "</div></div>";
   }
 

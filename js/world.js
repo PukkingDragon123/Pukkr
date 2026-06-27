@@ -252,13 +252,21 @@
       c.fillStyle = "#86b35a"; c.fillRect(px, py, T, T);
       c.fillStyle = "#6f9c49";
       c.fillRect(px, py + (n < 0.5 ? 0 : 8), T, 1);
-    } else { // GRASS
-      var greens = ["#9bd06f", "#94cb67", "#a3d678"];
-      c.fillStyle = greens[(x + y) % 2 === 0 ? 0 : 1];
+    } else { // GRASS — organic, hand-painted rather than a hard checker
+      var greens = ["#98ce6b", "#9fd674", "#92c965"];
+      var gi = n < 0.42 ? 0 : (n < 0.82 ? 1 : 2);
+      c.fillStyle = greens[gi];
       c.fillRect(px, py, T, T);
-      c.fillStyle = "rgba(90,150,70,0.35)";
-      if (n < 0.25) { c.fillRect(px + 3, py + 9, 1, 3); c.fillRect(px + 5, py + 10, 1, 2); }
-      if (n > 0.8) { c.fillRect(px + 10, py + 6, 1, 3); }
+      // a soft dappled patch so tiles don't read as a grid
+      c.fillStyle = "rgba(86,146,66,0.16)";
+      c.fillRect(px + ((n * 70) | 0) % 9, py + ((n * 130) | 0) % 9, 7, 5);
+      // little grass blades
+      c.fillStyle = "rgba(78,138,60,0.45)";
+      if (n < 0.30) { c.fillRect(px + 3, py + 9, 1, 3); c.fillRect(px + 5, py + 10, 1, 2); }
+      else if (n > 0.78) { c.fillRect(px + 10, py + 7, 1, 3); c.fillRect(px + 12, py + 8, 1, 2); }
+      // occasional warm highlight fleck
+      c.fillStyle = "rgba(220,240,160,0.30)";
+      if (n > 0.55 && n < 0.6) c.fillRect(px + 6, py + 4, 2, 2);
     }
   }
 

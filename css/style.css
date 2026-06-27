@@ -160,10 +160,11 @@ html, body {
 }
 .catch-title { font-size: 18px; font-weight: 800; margin-bottom: 6px; }
 .catch-bug {
-  width: 96px; height: 96px; margin: 4px auto 12px;
-  image-rendering: pixelated;
+  min-height: 128px; margin: 2px auto 8px;
+  display: flex; align-items: center; justify-content: center;
 }
-.catch-bug canvas { width: 100%; height: 100%; image-rendering: pixelated; }
+.catch-art { max-width: 168px; max-height: 128px; object-fit: contain; filter: drop-shadow(0 6px 5px rgba(74,63,53,0.25)); }
+.catch-art.pixel { image-rendering: pixelated; }
 .catch-meter {
   position: relative;
   height: 30px;
@@ -287,8 +288,8 @@ html, body {
   position: relative;
 }
 .card.locked { opacity: 0.55; filter: grayscale(0.7); }
-.card .card-art { width: 64px; height: 64px; margin: 0 auto 4px; }
-.card .card-art canvas { width: 100%; height: 100%; image-rendering: pixelated; }
+.card .card-art { width: 74px; height: 80px; margin: 0 auto 4px; display: flex; align-items: flex-end; justify-content: center; }
+.card .card-art img { max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 3px 2px rgba(74,63,53,0.18)); }
 .card .card-name { font-weight: 800; font-size: 13px; }
 .card .card-sub { font-size: 11px; color: var(--ink-soft); }
 .card .card-count {
@@ -315,8 +316,8 @@ html, body {
   margin-bottom: 10px;
   box-shadow: 0 3px 0 var(--shadow);
 }
-.row .row-art { width: 56px; height: 56px; flex: 0 0 56px; }
-.row .row-art canvas { width: 100%; height: 100%; image-rendering: pixelated; }
+.row .row-art { width: 60px; height: 66px; flex: 0 0 60px; display: flex; align-items: flex-end; justify-content: center; }
+.row .row-art img { max-width: 100%; max-height: 100%; object-fit: contain; }
 .row .row-main { flex: 1; min-width: 0; }
 .row .row-title { font-weight: 800; font-size: 15px; }
 .row .row-desc { font-size: 12px; color: var(--ink-soft); line-height: 1.4; }
@@ -369,7 +370,8 @@ button:disabled { opacity: 0.45; cursor: not-allowed; filter: grayscale(0.5); }
     radial-gradient(120% 90% at 50% 10%, #cdeafc 0%, #a9dcf0 40%, #8fcf86 100%);
   text-align: center;
 }
-.title-art { position: relative; }
+.title-art { position: relative; z-index: 2; }
+.title-sub, .title-menu, .title-foot { position: relative; z-index: 2; }
 .title-logo {
   font-size: clamp(48px, 11vw, 96px);
   font-weight: 900;
@@ -397,8 +399,8 @@ button:disabled { opacity: 0.45; cursor: not-allowed; filter: grayscale(0.5); }
   font-size: 11px; color: rgba(74,63,53,0.7); padding: 0 12px; line-height: 1.4;
 }
 
-/* Floating decorative bugs on the title */
-.float-bug { position: absolute; image-rendering: pixelated; animation: flutter 6s ease-in-out infinite; }
+/* Floating decorative jars on the title */
+.float-bug { position: absolute; z-index: 1; filter: drop-shadow(0 6px 6px rgba(74,63,53,0.25)); animation: flutter 6s ease-in-out infinite; }
 @keyframes flutter {
   0%,100% { transform: translate(0,0) rotate(-6deg); }
   50%     { transform: translate(10px,-14px) rotate(8deg); }

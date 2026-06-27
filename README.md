@@ -53,9 +53,13 @@ Your game **auto-saves** to your browser's local storage.
 ```
 index.html        # entry point; loads everything
 css/style.css     # the cozy look
+assets/
+  creatures/      # hand-drawn creature cut-outs (catch screen + overworld)
+  jars/           # hand-drawn "creature in a jar" art (collection screens)
 js/
   data.js         # all content: species, biomes, tools, friends
-  sprites.js      # procedural pixel-art (no image assets!)
+  art.js          # registry/loader for the hand-drawn art
+  sprites.js      # procedural pixel-art + the glass-jar renderer
   world.js        # the map, biomes, buildings, collision
   player.js       # movement
   spawns.js       # wild bugs roaming by biome & time
@@ -65,8 +69,10 @@ js/
   museum.js       # exhibits & visiting friends
   shop.js         # upgrades & food
   time.js         # day/night cycle
+  fx.js           # ambient pollen/fireflies, vignette, paper grain
   ui.js           # HUD, menus, toasts
   input.js        # keyboard
+  touch.js        # on-screen controls for phones/tablets
   audio.js        # tiny procedural sound effects
   main.js         # boot, loop, camera, interaction
 ```
@@ -74,6 +80,10 @@ js/
 ## Notes
 
 This is a **non-commercial fan project** made for fun. Pokémon and all related
-names are © Nintendo / Creatures Inc. / GAME FREAK inc. All creature sprites here
-are drawn procedurally from simple shape descriptors — no original game assets are
-used.
+names are © Nintendo / Creatures Inc. / GAME FREAK inc.
+
+A few creatures (Caterpie, Weedle, Paras, Shuckle and Wimpod) use original
+hand-drawn art under `assets/`; every other creature is drawn procedurally from
+simple shape descriptors, and even those are framed inside a drawn glass jar so
+the whole collection shares one cozy "bug in a jar" look. No original game assets
+are used.

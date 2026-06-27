@@ -212,6 +212,11 @@
       skittish: 0.0, baseSize: 30,
       look: { body: "round", c1: "#f0c040", c2: "#d9534f", c3: "#222", wings: "none", pattern: "spots" },
       blurb: "Tucks into a worn shell and quietly ferments berries into sweet juice. Famously, famously slow." },
+
+    { id: "wimpod", name: "Wimpod", rarity: "rare", biomes: ["pond"], times: ["day", "evening", "night"],
+      skittish: 0.8, baseSize: 45,
+      look: { body: "beetle", c1: "#9aa6c6", c2: "#6a5fb0", c3: "#f6e27a", wings: "none", pattern: "segments", horn: true },
+      blurb: "A timid little scavenger that bolts at the faintest shadow. Catching one takes a calm, patient hand." },
   ];
 
   // Index for quick lookups

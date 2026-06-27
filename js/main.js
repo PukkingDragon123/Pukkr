@@ -20,9 +20,11 @@
     ctx = canvas.getContext("2d");
     ctx.imageSmoothingEnabled = false;
 
+    PB.art.preload();
     PB.ui.init();
     PB.input.init();
     if (PB.touch) PB.touch.init();
+    if (PB.fx) PB.fx.init();
     PB.world.init();
 
     wireTitle();
@@ -64,17 +66,27 @@
   function addTitleBugs() {
     if (titleBugsAdded) return;
     titleBugsAdded = true;
-    var host = $("title-bugs");
-    var picks = ["butterfree", "ledian", "yanma", "beautifly", "volbeat", "scyther"];
-    var spots = [[-40, 30], [220, -10], [-30, 130], [210, 120], [80, -40], [120, 150]];
-    picks.forEach(function (sid, i) {
+    var host = $("title"); // full screen, so jars can sit clear of the centre
+    // float the hand-drawn jars in the corners around the menu
+    var jars = ["caterpie", "weedle", "paras", "shuckle", "wimpod"];
+    var spots = [
+      { left: "5%", top: "22%" },
+      { right: "6%", top: "14%" },
+      { left: "9%", bottom: "12%" },
+      { right: "8%", bottom: "14%" },
+      { left: "3%", top: "55%" },
+    ];
+    jars.forEach(function (sid, i) {
       var img = document.createElement("img");
-      img.src = PB.sprites.bugCanvas(sid, 56).toDataURL();
+      img.src = PB.art.jarURL(sid);
       img.className = "float-bug";
-      img.width = 56; img.height = 56;
-      img.style.left = spots[i][0] + "px";
-      img.style.top = spots[i][1] + "px";
-      img.style.animationDelay = (i * 0.7) + "s";
+      img.style.width = "92px";
+      var s = spots[i];
+      if (s.left) img.style.left = s.left;
+      if (s.right) img.style.right = s.right;
+      if (s.top) img.style.top = s.top;
+      if (s.bottom) img.style.bottom = s.bottom;
+      img.style.animationDelay = (i * 0.6) + "s";
       host.appendChild(img);
     });
   }
@@ -123,6 +135,7 @@
     if (dt <= 0) return;
     var newDay = PB.time.tick(dt);
     PB.terrarium.update(dt);
+    if (PB.fx) PB.fx.update(dt);
 
     if (PB.catching.isActive()) {
       PB.catching.update(dt);
@@ -211,10 +224,18 @@
     PB.player.draw(ctx, camX, camY);
 
     // day / night tint
+    var period = PB.time.period();
     var ov = PB.time.overlay();
     if (ov.dark > 0.001) {
       ctx.fillStyle = "rgba(" + ov.tint + "," + (ov.dark * 0.55).toFixed(3) + ")";
       ctx.fillRect(0, 0, VIEW_W, VIEW_H);
+    }
+
+    // cozy atmosphere on top: pollen/fireflies, vignette, faint paper grain
+    if (PB.fx) {
+      PB.fx.drawParticles(ctx, period);
+      PB.fx.drawVignette(ctx);
+      PB.fx.drawGrain(ctx);
     }
   }
 

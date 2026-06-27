@@ -94,6 +94,7 @@
   function eye(ctx, x, y, r, c3) {
     fillCircle(ctx, x, y, r, "#fff");
     fillCircle(ctx, x + r * 0.2, y, r * 0.55, c3 || "#222");
+    fillCircle(ctx, x - r * 0.15, y - r * 0.3, r * 0.22, "rgba(255,255,255,0.9)"); // glint
   }
 
   function pattern(ctx, look, x, y, r) {
@@ -292,6 +293,69 @@
     bugCache[key] = cv;
     return cv;
   }
+  // Render a procedural creature inside a cute glass jar (for collection screens
+  // where some species have hand-drawn jars and the rest should match the motif).
+  function jarCanvas(sid, px) {
+    px = px || 80;
+    var key = "jar:" + sid + "@" + px;
+    if (bugCache[key]) return bugCache[key];
+    var cv = document.createElement("canvas");
+    cv.width = px; cv.height = Math.round(px * 1.18);
+    var c = cv.getContext("2d");
+    drawJar(c, px, cv.height, sid);
+    bugCache[key] = cv;
+    return cv;
+  }
+
+  function drawJar(c, w, h, sid) {
+    c.lineJoin = "round";
+    c.lineWidth = Math.max(1.5, w * 0.035);
+    var bx = w * 0.14, bw = w * 0.72;
+    var by = h * 0.20, bh = h * 0.74, r = w * 0.16;
+
+    // soft contact shadow
+    c.fillStyle = "rgba(0,0,0,0.12)";
+    c.beginPath(); c.ellipse(w / 2, by + bh + w * 0.02, bw * 0.5, w * 0.06, 0, 0, Math.PI * 2); c.fill();
+
+    // glass body
+    c.fillStyle = "rgba(205,233,238,0.5)";
+    roundRect(c, bx, by, bw, bh, r); c.fill();
+
+    // contents, clipped to the glass
+    c.save();
+    roundRect(c, bx, by, bw, bh, r); c.clip();
+    // soil + pebbles
+    c.fillStyle = "#7a5a36"; c.fillRect(bx, by + bh - h * 0.12, bw, h * 0.12);
+    c.fillStyle = "#6a4f2a";
+    c.beginPath(); c.ellipse(bx + bw * 0.3, by + bh - h * 0.11, w * 0.06, w * 0.03, 0, 0, Math.PI * 2); c.fill();
+    c.beginPath(); c.ellipse(bx + bw * 0.7, by + bh - h * 0.10, w * 0.05, w * 0.028, 0, 0, Math.PI * 2); c.fill();
+    // a little twig
+    c.strokeStyle = "#8a6a3a"; c.lineWidth = Math.max(1.5, w * 0.03);
+    c.beginPath(); c.moveTo(bx + bw * 0.66, by + bh - h * 0.1); c.lineTo(bx + bw * 0.78, by + bh * 0.35); c.stroke();
+    c.lineWidth = Math.max(1.5, w * 0.035);
+    // the creature
+    var sp = PB.speciesById[sid];
+    if (sp) drawBug(c, sp.look, w / 2, by + bh * 0.56, w * 0.5, 0);
+    c.restore();
+
+    // glass outline + diagonal highlight
+    c.strokeStyle = OUTLINE; roundRect(c, bx, by, bw, bh, r); c.stroke();
+    c.fillStyle = "rgba(255,255,255,0.38)";
+    c.beginPath();
+    c.moveTo(bx + w * 0.06, by + h * 0.06);
+    c.lineTo(bx + w * 0.16, by + h * 0.04);
+    c.lineTo(bx + w * 0.07, by + bh * 0.8);
+    c.lineTo(bx + w * 0.02, by + bh * 0.7);
+    c.closePath(); c.fill();
+
+    // lid band + cloth top
+    var ly = by - h * 0.06;
+    c.fillStyle = "#e8d6b0";
+    c.beginPath(); c.ellipse(w / 2, ly, bw * 0.46, h * 0.05, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+    c.fillStyle = "#d9534f";
+    roundRect(c, bx + w * 0.02, by - h * 0.02, bw - w * 0.04, h * 0.06, w * 0.03); c.fill(); c.stroke();
+  }
+
   // A "?" silhouette for undiscovered species.
   function mysteryCanvas(px) {
     px = px || 64;
@@ -381,6 +445,7 @@
   PB.sprites = {
     drawBug: drawBug,
     bugCanvas: bugCanvas,
+    jarCanvas: jarCanvas,
     mysteryCanvas: mysteryCanvas,
     drawPlayer: drawPlayer,
     roundRect: roundRect,
