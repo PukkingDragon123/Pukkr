@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Poke Bug — A Cozy Bug Collecting Game</title>
+  <meta name="description" content="A cozy 2D bug-collecting fan game. Net wild bug Pokémon, raise them in jars, and open a museum to delight your friends." />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="game-frame">
+    <!-- The main render surface. Internal resolution is low for a pixel-art look. -->
+    <canvas id="screen" width="480" height="270"></canvas>
+
+    <!-- DOM-based UI layers sit on top of the canvas -->
+    <div id="ui-layer">
+      <!-- Heads up display -->
+      <div id="hud" class="hud hidden">
+        <div class="hud-pill" id="hud-clock"><span class="hud-icon">🕑</span><span id="clock-text">Day 1 · 8:00</span></div>
+        <div class="hud-pill" id="hud-candy"><span class="hud-icon">🍬</span><span id="candy-text">0</span></div>
+        <div class="hud-pill" id="hud-jar"><span class="hud-icon">🫙</span><span id="jar-text">0/8</span></div>
+        <div class="hud-pill" id="hud-net"><span class="hud-icon">🪤</span><span id="net-text">Old Net</span></div>
+      </div>
+
+      <!-- Contextual action prompt near the player -->
+      <div id="prompt" class="prompt hidden"></div>
+
+      <!-- Floating toast notifications -->
+      <div id="toasts" class="toasts"></div>
+
+      <!-- On-screen controls, shown only on touch devices -->
+      <div id="touch">
+        <div class="tc-dpad">
+          <button class="tc-btn tc-up" data-dir="up" aria-label="Up">▲</button>
+          <button class="tc-btn tc-left" data-dir="left" aria-label="Left">◀</button>
+          <button class="tc-btn tc-right" data-dir="right" aria-label="Right">▶</button>
+          <button class="tc-btn tc-down" data-dir="down" aria-label="Down">▼</button>
+        </div>
+        <button class="tc-act" id="tc-act" aria-label="Swing / Interact">🪤</button>
+      </div>
+
+      <!-- Catch mini-game overlay -->
+      <div id="catch-overlay" class="overlay hidden">
+        <div class="catch-box">
+          <div class="catch-title" id="catch-title">A wild bug!</div>
+          <div class="catch-bug" id="catch-bug"></div>
+          <div class="catch-meter">
+            <div class="catch-zone" id="catch-zone"></div>
+            <div class="catch-marker" id="catch-marker"></div>
+          </div>
+          <div class="catch-hint">Press <kbd>Space</kbd> when the marker is in the green zone!</div>
+          <div class="catch-attempts" id="catch-attempts"></div>
+        </div>
+      </div>
+
+      <!-- Generic full panel used by menus (collection, terrarium, museum, shop) -->
+      <div id="panel" class="panel hidden">
+        <div class="panel-window">
+          <div class="panel-header">
+            <span id="panel-title">Menu</span>
+            <button class="panel-close" id="panel-close" aria-label="Close">✕</button>
+          </div>
+          <div class="panel-tabs" id="panel-tabs"></div>
+          <div class="panel-body" id="panel-body"></div>
+        </div>
+      </div>
+
+      <!-- Title / main menu -->
+      <div id="title" class="title">
+        <div class="title-art">
+          <div class="title-logo">Poke<span>Bug</span></div>
+          <div class="title-bugs" id="title-bugs"></div>
+        </div>
+        <div class="title-sub">a cozy bug collecting game</div>
+        <div class="title-menu" id="title-menu">
+          <button class="btn-primary" id="btn-play">Play</button>
+          <button class="btn-secondary" id="btn-continue">Continue</button>
+          <button class="btn-ghost" id="btn-howto">How to Play</button>
+        </div>
+        <div class="title-foot">A non-commercial fan game · Pokémon © Nintendo/Creatures/GAME FREAK · inspired by cozy bug-park games</div>
+      </div>
+
+      <!-- Help overlay -->
+      <div id="help" class="overlay hidden">
+        <div class="help-box">
+          <h2>How to Play</h2>
+          <ul>
+            <li><b>Move</b> with <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or the arrow keys.</li>
+            <li><b>Interact / Swing net</b> with <kbd>Space</kbd>, <kbd>E</kbd> or <kbd>Enter</kbd>. Walk up to a wandering bug and swing!</li>
+            <li>Time the <b>catch meter</b> — stop the marker in the green zone. Better nets make the zone bigger.</li>
+            <li>Open menus: <kbd>C</kbd> Bugdex · <kbd>J</kbd> Jar · <kbd>R</kbd> Terrarium · <kbd>M</kbd> Museum · <kbd>B</kbd> Shop.</li>
+            <li><b>Raise</b> bugs in your terrarium at home — they grow happier and drip <b>candy</b>.</li>
+            <li><b>Donate</b> bugs to the <b>Museum</b>. Friends visit and reward you with candy and praise.</li>
+            <li>Spend candy at the <b>Shop</b> to upgrade your net, shoes, lures and more.</li>
+            <li>Different bugs come out at different <b>times of day</b> and in different <b>places</b>. Explore!</li>
+            <li>Your game <b>auto-saves</b>. Press <kbd>Esc</kbd> to close any window — and <kbd>H</kbd> any time to see this help again.</li>
+            <li>On a phone or tablet? On-screen controls appear automatically. 🐛</li>
+          </ul>
+          <button class="btn-primary" id="btn-help-close">Got it!</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Plain global scripts, loaded in dependency order so the game runs directly
+       from the file system (file://) with no build step or server required. -->
+  <script src="js/data.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/save.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/sprites.js"></script>
+  <script src="js/time.js"></script>
+  <script src="js/world.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/spawns.js"></script>
+  <script src="js/catching.js"></script>
+  <script src="js/collection.js"></script>
+  <script src="js/terrarium.js"></script>
+  <script src="js/museum.js"></script>
+  <script src="js/shop.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/input.js"></script>
+  <script src="js/touch.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
