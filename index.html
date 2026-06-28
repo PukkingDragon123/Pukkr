@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Poke Bug — A Cozy Bug Collecting Game</title>
-  <meta name="description" content="A cozy bug-collecting fan game: enter the forest shrine to catch bugs, grow them in your garden, and display them in your museum." />
+  <title>Poke Bug — A Cozy Bug Idle RPG</title>
+  <meta name="description" content="A cozy idle RPG: bait & catch bugs, merge them in the lab, and battle through areas with your squishy bug team." />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
@@ -13,44 +13,32 @@
 
     <div id="ui-layer">
       <div id="flash" class="flash"></div>
+
       <div id="hud" class="hud hidden">
-        <div class="hud-pill"><span class="hud-icon">🕑</span><span id="clock-text">Day 1 · 8:00</span></div>
-        <div class="hud-pill"><span class="hud-icon">💰</span><span id="candy-text">0</span></div>
-        <div class="hud-pill"><span class="hud-icon">🏛</span><span id="dex-text">0/5</span></div>
-        <button class="hud-pill hud-btn" id="hud-bag"><span class="hud-icon">🎒</span><span id="bag-text">0</span></button>
+        <div class="hud-pill"><span class="hud-icon">🎟️</span><span id="tok-text">0</span></div>
+        <div class="hud-pill"><span class="hud-icon">🐛</span><span id="dex-text">0/8</span></div>
+        <div class="hud-pill"><span class="hud-icon">💪</span><span id="pow-text">0</span></div>
       </div>
 
-      <div id="loc-label" class="loc-label hidden"></div>
+      <!-- Area selector -->
+      <div id="area-bar" class="area-bar hidden">
+        <button id="area-prev" class="area-arrow">◀</button>
+        <span id="area-name">Area</span>
+        <button id="area-next" class="area-arrow">▶</button>
+      </div>
+
       <div id="prompt" class="prompt hidden"></div>
       <div id="toasts" class="toasts"></div>
 
-      <!-- Forest shrine: choose a path -->
-      <div id="forest-paths" class="forest-paths hidden">
-        <button class="path-btn" data-side="left">⛩️<br>Left path</button>
-        <button class="path-btn" data-side="right">⛩️<br>Right path</button>
-      </div>
-      <!-- In a spot: leave back to the shrine -->
-      <button id="spot-leave" class="spot-leave hidden btn-small">← Back to shrine</button>
-
-      <!-- Museum food tray + garden upgrade -->
-      <div id="garden-tray" class="garden-tray hidden">
-        <div class="tray-foods" id="tray-foods"></div>
-        <button class="btn-small honey" id="garden-upgrade-btn">🌱 Upgrade Garden</button>
-      </div>
-
-      <!-- Museum controls -->
-      <div id="museum-bar" class="museum-bar hidden">
-        <div class="mb-info" id="mb-info"></div>
-        <button class="btn-small honey" id="mb-invite">🔔 Open the museum</button>
-      </div>
+      <!-- Bait bar (Catch mode) -->
+      <div id="bait-bar" class="bait-bar hidden"></div>
 
       <!-- Bottom navigation -->
       <div id="navbar" class="navbar hidden">
-        <button data-nav="forest"><span class="nav-em">🌳</span><span>Forest</span><small>catch</small></button>
-        <button data-nav="beach"><span class="nav-em">🏖️</span><span>Beach</span><small>catch</small></button>
-        <button data-nav="museum"><span class="nav-em">🏛</span><span>Museum</span><small>raise</small></button>
-        <button data-nav="fight"><span class="nav-em">⚔️</span><span>Arena</span><small>fight</small></button>
-        <button data-nav="shop"><span class="nav-em">🛒</span><span>Shop</span><small>gear</small></button>
+        <button data-nav="catch"><span class="nav-em">🎣</span><span>Catch</span></button>
+        <button data-nav="battle"><span class="nav-em">⚔️</span><span>Battle</span></button>
+        <button data-nav="bugs"><span class="nav-em">🐛</span><span>Bugs</span></button>
+        <button data-nav="lab"><span class="nav-em">⚗️</span><span>Lab</span></button>
       </div>
 
       <!-- Catch mini-game -->
@@ -63,12 +51,12 @@
             <div class="catch-sweet" id="catch-sweet"></div>
             <div class="catch-marker" id="catch-marker"></div>
           </div>
-          <div class="catch-hint">Tap / <kbd>Space</kbd> in the green — aim for the bright <b>sweet spot</b> for a bigger catch!</div>
+          <div class="catch-hint">Tap / <kbd>Space</kbd> in the green — aim for the <b>sweet spot</b>!</div>
           <div class="catch-attempts" id="catch-attempts"></div>
         </div>
       </div>
 
-      <!-- "You caught it!" result + size screen -->
+      <!-- "You caught it!" result -->
       <div id="catch-result" class="overlay hidden">
         <div class="result-box">
           <div class="result-spark s1">✨</div><div class="result-spark s2">🌟</div>
@@ -78,60 +66,26 @@
           <div class="result-name" id="result-name"></div>
           <div class="result-badges" id="result-badges"></div>
           <div class="result-size" id="result-size"></div>
-          <div class="result-candy" id="result-candy"></div>
-          <button class="btn-primary" id="result-ok">Nice!</button>
+          <button class="btn-primary" id="result-ok">Add to team!</button>
         </div>
       </div>
 
-      <!-- Backpack grid -->
-      <div id="bag-overlay" class="overlay hidden">
-        <div class="panel-window small">
-          <div class="panel-header">🎒 Backpack <button class="panel-close" id="bag-close">✕</button></div>
-          <div class="panel-body">
-            <div class="section-note" id="bag-note"></div>
-            <div id="bag-grid" class="bag-grid"></div>
-            <div id="bag-actions" class="bag-actions"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Shop -->
-      <div id="shop-overlay" class="overlay hidden">
+      <!-- Bugs (collection + team) -->
+      <div id="bugs-overlay" class="overlay hidden">
         <div class="panel-window">
-          <div class="panel-header">🛒 Cozy Shop <button class="panel-close" id="shop-close">✕</button></div>
-          <div class="panel-body" id="shop-body"></div>
-        </div>
-      </div>
-
-      <!-- Small popup: actions for one creature (display / release) -->
-      <div id="bug-popup" class="overlay hidden">
-        <div class="feed-box">
-          <button class="panel-close" id="popup-close">✕</button>
-          <div class="feed-art" id="popup-art"></div>
-          <div class="feed-name" id="popup-name"></div>
-          <div class="feed-sub" id="popup-sub"></div>
-          <div class="bar love"><span id="popup-grow"></span></div>
-          <div class="feed-actions">
-            <button class="btn-small berry" id="popup-release">💔 Release</button>
+          <div class="panel-header">🐛 My Bugs <button class="panel-close" id="bugs-close">✕</button></div>
+          <div class="panel-body">
+            <div class="section-note" id="bugs-note"></div>
+            <div id="bugs-grid" class="grid"></div>
           </div>
-          <div class="feed-hint">Tip: drag food from the tray onto a jar to grow it bigger! 🍃</div>
         </div>
       </div>
 
-      <!-- Garden upgrade popup -->
-      <div id="garden-up" class="overlay hidden">
-        <div class="feed-box">
-          <button class="panel-close" id="gup-close">✕</button>
-          <div id="gup-body"></div>
-        </div>
-      </div>
-
-      <!-- Shrine pick-a-card mini-game -->
-      <div id="cardgame" class="overlay hidden">
-        <div class="card-box">
-          <div class="card-title">Pick a charm! ✨</div>
-          <div class="card-row" id="card-row"></div>
-          <div class="card-result" id="card-result"></div>
+      <!-- Lab (merge) -->
+      <div id="lab-overlay" class="overlay hidden">
+        <div class="panel-window">
+          <div class="panel-header">⚗️ Merge Lab <button class="panel-close" id="lab-close">✕</button></div>
+          <div class="panel-body" id="lab-body"></div>
         </div>
       </div>
 
@@ -141,13 +95,13 @@
           <div class="title-logo">Poke<span>Bug</span></div>
           <div class="title-bugs" id="title-bugs"></div>
         </div>
-        <div class="title-sub">a cozy bug collecting game</div>
+        <div class="title-sub">a cozy bug idle RPG</div>
         <div class="title-menu" id="title-menu">
           <button class="btn-primary" id="btn-play">Play</button>
           <button class="btn-secondary" id="btn-continue">Continue</button>
           <button class="btn-ghost" id="btn-howto">How to Play</button>
         </div>
-        <div class="title-foot">A non-commercial fan game · Pokémon © Nintendo/Creatures/GAME FREAK · inspired by cozy bug-park games</div>
+        <div class="title-foot">A non-commercial fan game · Pokémon © Nintendo/Creatures/GAME FREAK</div>
       </div>
 
       <!-- Help -->
@@ -155,12 +109,11 @@
         <div class="help-box">
           <h2>How to Play</h2>
           <ul>
-            <li>⛩️ <b>Forest / Beach</b> — pick a path at the shrine, then <b>tap a fast creature</b> and stop the <b>shrinking</b> catch bar in the green. Hit the bright <b>sweet spot</b> for a bigger catch!</li>
-            <li>🎒 <b>Backpack</b> — caught creatures take up space by size on a grid. Drag to tidy them; upgrade the bag in the Shop.</li>
-            <li>🏛 <b>Museum</b> — keep your creatures in jars here. <b>Drag food</b> onto a jar to grow it bigger (worth more!), and <b>open the museum</b> to earn <b>money</b> 💰.</li>
-            <li>⚔️ <b>Arena</b> — <b>click to fight</b>! Bigger, grown creatures hit harder. Beat waves of foes for money.</li>
-            <li>🛒 <b>Shop</b> — better net, bigger backpack, food, and a Plane Ticket to the Beach.</li>
-            <li>Switch places with the bottom bar. <kbd>Esc</kbd> closes a window; <kbd>H</kbd> shows this help.</li>
+            <li>🎣 <b>Catch</b> — set <b>fruit bait</b> and wait for a bug (skip the wait with 🎟️ tokens). Rarer bugs <b>sparkle</b> and have a <b>talent</b>. Tap the bug, then beat the <b>shrinking</b> catch bar.</li>
+            <li>🐛 <b>Bugs</b> — build a <b>team</b> of 3. Talents buff the whole team (Mighty/Lucky/Healer/Tough/Swift), so mix wisely!</li>
+            <li>⚔️ <b>Battle</b> — <b>tap to attack</b> (your team also fights on its own). Clear waves, beat the <b>boss</b> to <b>unlock the next area</b>, and earn tokens.</li>
+            <li>⚗️ <b>Lab</b> — <b>merge</b> two of the same bug into a bigger, stronger one.</li>
+            <li>Use the <b>◀ ▶</b> at the top to travel between unlocked areas. <kbd>Esc</kbd> closes a window.</li>
           </ul>
           <button class="btn-primary" id="btn-help-close">Got it!</button>
         </div>
@@ -174,19 +127,13 @@
   <script src="js/audio.js"></script>
   <script src="js/save.js"></script>
   <script src="js/state.js"></script>
-  <script src="js/bag.js"></script>
-  <script src="js/time.js"></script>
   <script src="js/scene.js"></script>
-  <script src="js/forest.js"></script>
-  <script src="js/spawns.js"></script>
-  <script src="js/catching.js"></script>
+  <script src="js/bait.js"></script>
   <script src="js/collection.js"></script>
-  <script src="js/garden.js"></script>
-  <script src="js/shop.js"></script>
-  <script src="js/museum.js"></script>
-  <script src="js/fight.js"></script>
+  <script src="js/catching.js"></script>
+  <script src="js/combat.js"></script>
+  <script src="js/merge.js"></script>
   <script src="js/ui.js"></script>
-
   <script src="js/input.js"></script>
   <script src="js/fx.js"></script>
   <script src="js/main.js"></script>

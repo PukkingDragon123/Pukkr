@@ -1,5 +1,5 @@
 /* ===========================================================================
-   input.js — keyboard convenience (the game is mostly click/tap/drag).
+   input.js — keyboard convenience (the game is mostly tap/click).
    =========================================================================== */
 (function (PB) {
   "use strict";
@@ -22,11 +22,10 @@
 
     if (ACTION[k]) { PB.main.interact(); return; }
     if (k === "h" || k === "?") { PB.main.openHelp(); return; }
-    if (k === "b") { PB.ui.openBag(); return; }
-    if (k === "1") PB.main.goLocation("forest");
-    else if (k === "2") PB.main.goLocation("garden");
-    else if (k === "3") PB.main.goLocation("museum");
-    else if (k === "4") PB.main.goLocation("shop");
+    if (k === "1") PB.main.nav("catch");
+    else if (k === "2") PB.main.nav("battle");
+    else if (k === "3") PB.main.nav("bugs");
+    else if (k === "4") PB.main.nav("lab");
   }
 
 })(window.PB = window.PB || {});

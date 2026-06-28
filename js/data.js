@@ -1,6 +1,6 @@
 /* ===========================================================================
-   data.js — static game content for Poke Bug.
-   Only the five hand-drawn creatures are used.
+   data.js — static content for Poke Bug: a cozy idle bug-collecting RPG.
+   Loop: bait & wait → catch → merge → battle → unlock areas.
    =========================================================================== */
 (function (PB) {
   "use strict";
@@ -8,139 +8,80 @@
   PB.config = {
     VIEW_W: 960,
     VIEW_H: 540,
-    DAY_LENGTH_SEC: 240,
-    START_HOUR: 8,
-    AUTOSAVE_SEC: 20,
-    START_CANDY: 16,
-    CROWD: 6,            // wild creatures in a forest spot at once
-  };
-
-  PB.timeOfDay = function (hour) {
-    if (hour >= 5 && hour < 10) return "morning";
-    if (hour >= 10 && hour < 17) return "day";
-    if (hour >= 17 && hour < 20) return "evening";
-    return "night";
+    AUTOSAVE_SEC: 15,
+    START_TOKENS: 12,
+    TEAM_SIZE: 3,
+    CATCH_ZONE: 0.46,     // catch-bar zone width
+    CATCH_SHRINK: 0.06,   // how fast it closes
   };
 
   PB.rarity = {
-    common:   { label: "Common",   weight: 100, value: 6,  star: "★" },
-    uncommon: { label: "Uncommon", weight: 48,  value: 12, star: "★★" },
-    rare:     { label: "Rare",     weight: 18,  value: 26, star: "★★★" },
-    epic:     { label: "Epic",     weight: 6,   value: 60, star: "★★★★" },
+    common:   { label: "Common",   value: 6,  star: "★",    talent: 0.06 },
+    uncommon: { label: "Uncommon", value: 11, star: "★★",   talent: 0.18 },
+    rare:     { label: "Rare",     value: 22, star: "★★★",  talent: 0.45 },
+    epic:     { label: "Epic",     value: 48, star: "★★★★", talent: 0.85 },
   };
 
-  /* The five collectible creatures.
-     fw/fh = footprint (cells) in the backpack grid.
-     skittish (0..1) makes a wild creature faster & dodgier and the catch bar
-     shrink quicker. */
+  // The collectible / fightable creatures (hand-drawn for the 5; procedural beach bugs).
   PB.species = [
-    // --- forest (hand-drawn art) ---
-    { id: "caterpie", name: "Caterpie", dex: 10, rarity: "common", home: "forest", locs: ["forest"],
-      skittish: 0.15, baseSize: 28, fw: 1, fh: 1,
-      blurb: "A gentle grub that nibbles leaves all morning." },
-    { id: "weedle", name: "Weedle", dex: 13, rarity: "common", home: "forest", locs: ["forest"],
-      skittish: 0.3, baseSize: 30, fw: 2, fh: 1,
-      blurb: "A hairy little grub with a sharp stinger on its head." },
-    { id: "shuckle", name: "Shuckle", dex: 213, rarity: "uncommon", home: "tree", locs: ["forest"],
-      skittish: 0.1, baseSize: 30, fw: 1, fh: 1,
-      blurb: "Tucks into a worn shell and ferments berries into sweet juice." },
-    { id: "paras", name: "Paras", dex: 46, rarity: "rare", home: "forest", locs: ["forest"],
-      skittish: 0.45, baseSize: 34, fw: 2, fh: 2,
-      blurb: "Two mushrooms ride on its back, sharing everything it finds." },
-    { id: "wimpod", name: "Wimpod", dex: 767, rarity: "epic", home: "pond", locs: ["forest", "beach"],
-      skittish: 0.85, baseSize: 46, fw: 2, fh: 2,
-      blurb: "A timid scavenger that bolts at the faintest shadow. Loves the shoreline." },
-    // --- beach (procedural cute sprites) ---
-    { id: "corphish", name: "Corphish", dex: 341, rarity: "common", home: "pond", locs: ["beach"],
-      skittish: 0.35, baseSize: 30, fw: 2, fh: 1,
+    { id: "caterpie", name: "Caterpie", dex: 10, rarity: "common", baseSize: 28,
+      blurb: "A gentle grub that nibbles leaves all day." },
+    { id: "weedle", name: "Weedle", dex: 13, rarity: "common", baseSize: 30,
+      blurb: "A hairy grub with a sharp stinger." },
+    { id: "shuckle", name: "Shuckle", dex: 213, rarity: "uncommon", baseSize: 30,
+      blurb: "A tough little shell that ferments berries." },
+    { id: "paras", name: "Paras", dex: 46, rarity: "rare", baseSize: 34,
+      blurb: "Mushroom-backed and surprisingly sturdy." },
+    { id: "wimpod", name: "Wimpod", dex: 767, rarity: "epic", baseSize: 46,
+      blurb: "Timid, but fast and full of surprises." },
+    { id: "corphish", name: "Corphish", dex: 341, rarity: "common", baseSize: 30,
       look: { body: "crab", c1: "#e0533f", c2: "#f0c040", c3: "#222", claws: true },
-      blurb: "A hardy little crawdad that turned up at the beach and simply moved in." },
-    { id: "dwebble", name: "Dwebble", dex: 557, rarity: "uncommon", home: "pond", locs: ["beach"],
-      skittish: 0.3, baseSize: 30, fw: 1, fh: 1,
+      blurb: "A hardy crawdad that loves a scrap." },
+    { id: "dwebble", name: "Dwebble", dex: 557, rarity: "uncommon", baseSize: 30,
       look: { body: "crab", c1: "#e0a86a", c2: "#9aa0a6", c3: "#222", claws: true, shell: true },
-      blurb: "Carries a smooth stone home on its back, scooting between tide pools." },
-    { id: "anorith", name: "Anorith", dex: 347, rarity: "rare", home: "pond", locs: ["beach"],
-      skittish: 0.55, baseSize: 40, fw: 2, fh: 2,
+      blurb: "Carries a sturdy stone shield on its back." },
+    { id: "anorith", name: "Anorith", dex: 347, rarity: "rare", baseSize: 40,
       look: { body: "shrimp", c1: "#7fb0d8", c2: "#2a4d6e", c3: "#222" },
-      blurb: "An ancient little swimmer, paddling the shallows with feathery fins." },
+      blurb: "An ancient swimmer with slashing claws." },
   ];
   PB.speciesById = {};
   PB.species.forEach(function (s) { PB.speciesById[s.id] = s; });
 
-  // Food — bought in the shop, then dragged onto a creature in the Garden.
-  PB.feeds = [
-    { id: "leaf",  name: "Fresh Leaf", icon: "🍃", cost: 3,  grow: 0.12 },
-    { id: "berry", name: "Oran Berry", icon: "🫐", cost: 8,  grow: 0.30 },
-    { id: "honey", name: "Honey Drop", icon: "🍯", cost: 18, grow: 0.60 },
-  ];
-
-  // ---- upgrades ------------------------------------------------------------
-  // Net: bigger starting catch zone + slower shrink. Bag: more grid cells.
-  // Garden: faster passive growth + candy drip.
-  PB.upgrades = {
-    net: {
-      name: "Net", icon: "🥅",
-      desc: "A finer net starts the catch bar wider and shrinks it slower.",
-      tiers: [
-        { name: "Old Net",    cost: 0,    zone: 0.42, shrink: 0.085 },
-        { name: "Sturdy Net", cost: 70,   zone: 0.50, shrink: 0.070 },
-        { name: "Silk Net",   cost: 200,  zone: 0.58, shrink: 0.056 },
-        { name: "Pro Net",    cost: 480,  zone: 0.66, shrink: 0.044 },
-        { name: "Master Net", cost: 1100, zone: 0.74, shrink: 0.034 },
-      ],
-    },
-    bag: {
-      name: "Backpack", icon: "🎒",
-      desc: "A bigger backpack fits more (and larger) creatures.",
-      tiers: [
-        { name: "Small Bag",  cost: 0,   w: 5, h: 5 },
-        { name: "Roomy Bag",  cost: 120, w: 6, h: 5 },
-        { name: "Big Bag",    cost: 320, w: 6, h: 6 },
-        { name: "Huge Bag",   cost: 720, w: 7, h: 7 },
-      ],
-    },
-    garden: {
-      name: "Garden", icon: "🌱",
-      desc: "Tend the garden so your creatures grow bigger faster.",
-      tiers: [
-        { name: "Plain Patch",   cost: 0,   growth: 1.0, drip: 1.0 },
-        { name: "Tended Patch",  cost: 90,  growth: 1.6, drip: 1.4 },
-        { name: "Lush Garden",   cost: 260, growth: 2.4, drip: 2.0 },
-        { name: "Magic Garden",  cost: 640, growth: 3.6, drip: 3.0 },
-      ],
-    },
+  // Talents — rare/special catches sparkle and carry one. They buff the team.
+  PB.talents = {
+    mighty: { name: "Mighty",  icon: "💪", desc: "+25% team attack",  atkPct: 0.25 },
+    lucky:  { name: "Lucky",   icon: "🍀", desc: "+18% crit chance",  crit: 0.18 },
+    healer: { name: "Healer",  icon: "💖", desc: "heals the team",    heal: 0.05 },
+    tough:  { name: "Tough",   icon: "🛡️", desc: "+35% team HP",      hpPct: 0.35 },
+    swift:  { name: "Swift",   icon: "⚡", desc: "+50% idle attack",  idlePct: 0.5 },
   };
+  PB.talentIds = Object.keys(PB.talents);
 
-  // A one-time shop purchase that unlocks the Beach.
-  PB.ticket = { name: "Plane Ticket", icon: "✈️", cost: 150, desc: "Fly to the sunny Beach to meet brand-new creatures!" };
-
-  // Museum friends.
-  PB.friends = [
-    { id: "fern", name: "Fern",   emoji: "👧", likes: "forest" },
-    { id: "pip",  name: "Pip",    emoji: "👦", likes: "pond" },
-    { id: "oak",  name: "Mr. Oak", emoji: "🧓", likes: "tree" },
-    { id: "maple", name: "Maple", emoji: "🧒", likes: "meadow" },
-    { id: "rosa", name: "Rosa",   emoji: "👩", likes: "flowers" },
+  // Fruit bait: longer waits give better odds of rare/talented bugs.
+  PB.fruits = [
+    { id: "leaf",  name: "Leaf Bait",  icon: "🍃", wait: 18,  rare: 0.0,  desc: "Quick & free." },
+    { id: "berry", name: "Berry Bait", icon: "🫐", wait: 45,  rare: 0.22, desc: "Tastier — better odds." },
+    { id: "honey", name: "Honey Bait", icon: "🍯", wait: 95,  rare: 0.5,  desc: "Irresistible — best odds." },
   ];
 
-  PB.museumTiers = [
-    { at: 0, name: "Empty Stand",   blurb: "A quiet room, waiting for its first jar." },
-    { at: 1, name: "Curio Corner",  blurb: "A first jar on display — a charming start." },
-    { at: 2, name: "Local Gallery", blurb: "Word is getting around." },
-    { at: 3, name: "Bug Pavilion",  blurb: "Friends visit just to see your jars." },
-    { at: 4, name: "Grand Museum",  blurb: "A renowned little hall of wonders." },
-    { at: 5, name: "World Museum",  blurb: "The finest bug museum in all the land!" },
+  // Areas unlock in order by beating each one's boss.
+  PB.areas = [
+    { id: "woods", name: "Whispering Woods", bg: "forest",
+      bugs: ["caterpie", "weedle", "shuckle", "paras"], foes: ["caterpie", "weedle", "paras"], waves: 5 },
+    { id: "beach", name: "Sunny Beach", bg: "beach",
+      bugs: ["corphish", "dwebble", "wimpod"], foes: ["corphish", "dwebble", "wimpod"], waves: 6 },
+    { id: "grove", name: "Glowing Grove", bg: "forest",
+      bugs: ["paras", "shuckle", "anorith", "wimpod"], foes: ["paras", "shuckle", "anorith"], waves: 7 },
+    { id: "reef", name: "Coral Reef", bg: "beach",
+      bugs: ["anorith", "wimpod", "corphish", "dwebble"], foes: ["wimpod", "anorith", "dwebble"], waves: 8 },
   ];
 
-  // ---- forest spots --------------------------------------------------------
-  // Each path choice rolls one of these outcomes (by weight).
-  PB.forestOutcomes = [
-    { kind: "catch",    weight: 52, label: "A buzzing thicket!" },
-    { kind: "catch_rare", weight: 12, label: "A hidden grove — rarer bugs here!" },
-    { kind: "candy",    weight: 12, label: "You found a candy stash!" },
-    { kind: "item",     weight: 10, label: "A picnic basket of food!" },
-    { kind: "minigame", weight: 10, label: "A little shrine game!" },
-    { kind: "unlucky",  weight: 4,  label: "...just rustling leaves. Nothing here." },
-  ];
+  PB.sizeLabelFor = function (ratio) {
+    if (ratio < 0.82) return "Tiny";
+    if (ratio < 0.97) return "Small";
+    if (ratio < 1.12) return "Average";
+    if (ratio < 1.32) return "Big";
+    return "Huge";
+  };
 
 })(window.PB = window.PB || {});

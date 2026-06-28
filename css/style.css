@@ -665,6 +665,50 @@ button:disabled { opacity: 0.45; cursor: not-allowed; filter: grayscale(0.5); }
 .result-spark.s4 { right: 12%; bottom: 32%; animation-delay: 0.6s; }
 @keyframes spark-pop { 0%, 100% { transform: scale(0.6); opacity: 0.3; } 50% { transform: scale(1.2); opacity: 1; } }
 
+/* ---- Area bar ------------------------------------------------------------ */
+.area-bar {
+  position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 10px;
+  background: var(--paper); border: 3px solid var(--border); border-radius: 999px;
+  padding: 4px 8px; font-weight: 800; font-size: 15px; box-shadow: 0 3px 0 var(--shadow);
+}
+.area-arrow { border: none; background: var(--cream); border-radius: 999px; width: 30px; height: 30px; font-weight: 900; cursor: pointer; border: 2px solid var(--border); }
+.area-arrow:active { transform: translateY(2px); }
+#area-name { min-width: 150px; text-align: center; }
+
+/* ---- Bait bar ------------------------------------------------------------ */
+.bait-bar {
+  position: absolute; left: 50%; bottom: 104px; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center;
+  background: rgba(255, 250, 240, 0.95); border: 3px solid var(--border); border-radius: 18px;
+  padding: 8px 14px; box-shadow: 0 5px 0 var(--shadow); max-width: 94vw;
+}
+.bait-label { font-weight: 800; font-size: 14px; }
+.bait-fruit {
+  display: inline-flex; flex-direction: column; align-items: center; gap: 0;
+  border: 3px solid var(--border); background: var(--cream); border-radius: 12px;
+  padding: 5px 12px; font-weight: 800; font-size: 12px; cursor: pointer; box-shadow: 0 2px 0 var(--shadow);
+}
+.bait-fruit .bf-ic { font-size: 22px; }
+.bait-fruit small { color: var(--ink-soft); }
+.bait-fruit:hover { background: var(--honey); transform: translateY(-2px); }
+.bait-prog { width: 160px; height: 12px; background: #e9dcbd; border: 2px solid var(--border); border-radius: 999px; overflow: hidden; }
+.bait-prog > span { display: block; height: 100%; background: var(--leaf); border-radius: 999px; }
+.bait-time { font-weight: 800; font-size: 14px; min-width: 38px; text-align: center; }
+
+/* ---- bug / lab cards ----------------------------------------------------- */
+.bug-card, .lab-card { cursor: pointer; transition: transform 0.1s; }
+.bug-card:hover, .lab-card:hover { transform: translateY(-3px); }
+.bug-card.in-team { border-color: var(--leaf-dk); box-shadow: 0 0 0 3px var(--leaf), 0 3px 0 var(--shadow); }
+.card.sparkle { background: linear-gradient(160deg, #fff7da, #ffe7f3); }
+.card.sparkle::after { content: "✨"; position: absolute; top: -6px; left: -6px; font-size: 14px; }
+.card-talent { position: absolute; top: -8px; right: 22px; font-size: 16px; }
+.card-rel { position: absolute; bottom: 4px; right: 4px; width: 20px; height: 20px; border-radius: 999px; border: 2px solid var(--border); background: var(--berry); color: #fff; font-size: 11px; font-weight: 800; cursor: pointer; line-height: 1; padding: 0; }
+.lab-card.lab-sel { border-color: var(--honey-dk); box-shadow: 0 0 0 3px var(--honey), 0 3px 0 var(--shadow); }
+.lab-card.lab-partner { border-color: var(--leaf-dk); box-shadow: 0 0 0 3px var(--leaf), 0 3px 0 var(--shadow); animation: pulse 1s ease-in-out infinite; }
+@keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+.rbadge.tal { background: #e6a3d0; }
+
 /* ---- Responsiveness ------------------------------------------------------ */
 @media (max-width: 640px) {
   .hud-pill { font-size: 12px; padding: 4px 10px 4px 6px; }
