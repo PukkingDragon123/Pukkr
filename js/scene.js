@@ -86,6 +86,31 @@
       c.stroke();
     }
   }
+  function drawTorii(c, x, baseY, s) {
+    var red = "#d2452f", dark = "#8a2f20";
+    var pw = 16 * s, ph = 150 * s, span = 150 * s;
+    // pillars
+    [-1, 1].forEach(function (sgn) {
+      var px = x + sgn * span * 0.5;
+      var g = c.createLinearGradient(px - pw, 0, px + pw, 0);
+      g.addColorStop(0, dark); g.addColorStop(0.5, red); g.addColorStop(1, dark);
+      c.fillStyle = g;
+      c.fillRect(px - pw / 2, baseY - ph, pw, ph);
+    });
+    // top beam (kasagi) — gently curved
+    c.fillStyle = red;
+    c.beginPath();
+    c.moveTo(x - span * 0.62, baseY - ph + 6 * s);
+    c.quadraticCurveTo(x, baseY - ph - 14 * s, x + span * 0.62, baseY - ph + 6 * s);
+    c.lineTo(x + span * 0.62, baseY - ph - 8 * s);
+    c.quadraticCurveTo(x, baseY - ph - 30 * s, x - span * 0.62, baseY - ph - 8 * s);
+    c.closePath(); c.fill();
+    c.fillStyle = dark;
+    c.fillRect(x - span * 0.5, baseY - ph - 2 * s, span, 6 * s);     // second beam (nuki)
+    c.fillStyle = "#f0e8d8";
+    c.fillRect(x - 5 * s, baseY - ph + 4 * s, 10 * s, ph * 0.5);     // central plaque
+  }
+
   function roundRect(c, x, y, w, h, r) {
     c.beginPath();
     c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r);
@@ -142,6 +167,12 @@
       c.fillStyle = "#f0e6d0"; c.fillRect(mx - 3, my - 6, 6, 12);
       c.fillStyle = rnd() < 0.5 ? "#d9534f" : "#e8895a"; c.beginPath(); c.ellipse(mx, my - 6, 11, 8, 0, Math.PI, 0); c.fill();
     }
+    // a stone path leading to a red torii shrine gate
+    c.fillStyle = "rgba(200,180,140,0.5)";
+    c.beginPath();
+    c.moveTo(W * 0.5 - 24, H * 0.62); c.lineTo(W * 0.5 + 24, H * 0.62);
+    c.lineTo(W * 0.5 + 90, H); c.lineTo(W * 0.5 - 90, H); c.closePath(); c.fill();
+    drawTorii(c, W * 0.5, H * 0.66, 1.0);
     fern(c, W * 0.15, H * 0.92, 1.4, [80, 130, 60]); fern(c, W * 0.85, H * 0.9, 1.5, [80, 130, 60]);
     c.fillStyle = "rgba(255,255,255,0.16)"; c.beginPath(); c.ellipse(W * 0.5, H * 0.6, W * 0.6, 40, 0, 0, Math.PI * 2); c.fill();
     blob(c, W * 0.02, H * 1.04, 280, [30, 55, 30], 0.65); blob(c, W * 1.0, H * 1.02, 300, [30, 55, 30], 0.65);

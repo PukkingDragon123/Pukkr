@@ -16,17 +16,17 @@
     speciesCount: function () { return PB.museumSpeciesCount(); },
     tier: function () { return PB.museumTier(); },
 
-    // move an owned creature (by index in state.bugs) onto display
-    donate: function (index) {
-      var bug = PB.state.bugs[index];
+    // move an owned creature (by uid) onto display; value scales with its size
+    donate: function (uid) {
+      var bug = PB.bag.byUid(uid);
       if (!bug) return { ok: false };
       var sp = PB.speciesById[bug.sid];
       if (this.has(bug.sid)) return { ok: false, reason: "dup", name: sp.name };
       var before = PB.museumTier();
-      PB.state.museum.donated[bug.sid] = { size: bug.size };
+      var size = PB.sizeOf(bug), reward = PB.bugValue(bug);
+      PB.state.museum.donated[bug.sid] = { size: size };
       PB.dexEntry(bug.sid).donated = true;
-      PB.state.bugs.splice(index, 1);
-      var reward = PB.rarity[sp.rarity].value;
+      PB.bag.remove(uid);
       PB.addCandy(reward);
       PB.audio.donate();
       var after = PB.museumTier();

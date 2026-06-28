@@ -1,14 +1,19 @@
 # 🐛 Poke Bug
 
-A **cozy 2D bug-collecting fan game** in a soft, hand-painted style, with three
-peaceful places to visit:
+A **cozy 2D bug-collecting fan game** in a soft, hand-painted style:
 
-- 🌳 **Forest** — wild creatures drift by; **click or tap** one to net it.
-- 🌷 **Garden** — your creatures live here in jars; feed them to raise their Love.
-- 🏛 **Museum** — display your jars and invite friends, who leave you candy.
+- ⛩️ **Forest** — enter through a little shrine and pick the **left or right path**.
+  You'll find a bug spot (tap a fast, dodgy creature, then beat the **shrinking**
+  catch bar), a candy stash, a basket of food, a pick-a-charm game, or nothing.
+- 🎒 **Backpack** — caught creatures take up **space by size** on a 5×5 grid; drag
+  to tidy them. Upgrade the bag for more room.
+- 🌷 **Garden** — **drag food onto a jar** to grow your creature. The bigger it
+  grows, the more it's worth! Upgrade the garden to grow faster and earn more.
+- 🏛 **Museum** — display your grown creatures and **open the doors** for visiting
+  friends, who leave candy.
+- 🛒 **Shop** — buy a better net, a bigger backpack, and food.
 
-Inspired by laid-back bug-park collecting games. There's no failing and no rush —
-just a warm little place to potter around in. Every creature is hand-drawn art.
+Inspired by laid-back bug-park collecting games. Every creature is hand-drawn art.
 
 ## Play
 
@@ -25,47 +30,46 @@ Your game **auto-saves** to your browser's local storage.
 
 ## How to play
 
-Mostly you just **click / tap**. The bottom bar switches between the three places.
+Mostly you just **click / tap / drag**. The bottom bar switches places.
 
 | Action | Keys |
 | --- | --- |
-| Catch a creature (in the Forest) | **click / tap** it (or `Space` to net the nearest) |
-| Forest / Garden / Museum | `1` / `2` / `3` |
-| Help | `H` |
-| Close a window | `Esc` |
+| Catch (tap a creature in a forest spot) | **click / tap** it (or `Space`) |
+| Forest / Garden / Museum / Shop | `1` / `2` / `3` / `4` |
+| Backpack | `B` |
+| Help · Close a window | `H` · `Esc` |
 
-1. **Forest** — click or tap a creature drifting by. Time the catch meter so the
-   marker stops in the green zone; skittish creatures (like Wimpod) are trickier.
-2. **Garden** — your creatures sit here in jars. Tap a jar to **feed** it (costs
-   a little candy) and raise its **Love** — happy creatures gently drip candy
-   back. There's a soft day/night cycle, with fireflies at night.
-3. **Museum** — from a Garden jar, choose **Display in Museum**, then **open the
-   doors**. Friends visit and leave candy — more when an exhibit matches the
-   habitat they love. Fill all five jars to reach a *World Museum*.
+1. **Forest** — pick a path at the shrine. In a bug spot, **tap a fast, dodgy
+   creature** to start the catch, then press/tap while the marker is in the green
+   — but the zone keeps **shrinking**, so be quick! A better **net** (Shop) helps.
+2. **Backpack** — your catch is stored on a grid by its size. Drag jars to tidy
+   them; a full bag means you must release or display something first.
+3. **Garden** — **drag food** from the tray onto a jar to grow your creature.
+   Bigger = worth more candy. **Upgrade Garden** to grow faster and drip more.
+4. **Museum** — tap a Garden jar → **Display in Museum**, then **open the doors**
+   for visiting friends and candy.
 
 ## What's where
 
 ```
 index.html        # entry point; loads everything
 css/style.css     # the cozy look
-assets/
-  creatures/      # hand-drawn creature cut-outs (catch screen + scenes)
-  jars/           # hand-drawn "creature in a jar" art (collection screens)
+assets/{creatures,jars}/   # the five hand-drawn creatures (portrait + jar art)
 js/
-  data.js         # all content: the five creatures, feeds, friends
+  data.js         # content: creatures, footprints, upgrades, food, forest spots
   art.js          # registry/loader + drawing for the hand-drawn art
-  scene.js        # the painterly Forest / Garden / Museum backgrounds
-  spawns.js       # wild creatures drifting through the Forest
-  catching.js     # the catch mini-game
-  collection.js   # your owned creatures (catch / release)
-  raise.js        # feeding & passive candy in the Garden
+  bag.js          # the spatial 5x5 backpack (footprints, placement)
+  scene.js        # painterly Forest (with torii) / Garden / Museum backgrounds
+  forest.js       # shrine paths & random spot outcomes
+  spawns.js       # fast, dodgy creatures in a forest spot
+  catching.js     # the shrinking-bar catch mini-game
+  collection.js   # releasing creatures
+  garden.js       # growing & feeding (drag-and-drop) + candy drip
+  shop.js         # net / backpack / garden upgrades + food
   museum.js       # displaying jars & visiting friends
-  time.js         # day/night cycle
-  fx.js           # ambient pollen/fireflies, vignette, paper grain
-  ui.js           # HUD, toasts, catch overlay, feed card, museum bar
-  input.js        # keyboard
-  audio.js        # tiny procedural sound effects
-  main.js         # boot, loop, scene render, click-to-catch, navigation
+  time.js · fx.js # day/night cycle · pollen/fireflies/vignette
+  ui.js           # all overlays: catch, backpack, shop, popups, tray, cards
+  input.js · main.js  # keyboard · boot/loop/scene render/navigation
 ```
 
 ## Notes

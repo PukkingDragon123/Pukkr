@@ -9,10 +9,14 @@
   var rand = Math.random;
 
   function weightedPick() {
-    var list = PB.species, total = 0, i;
-    for (i = 0; i < list.length; i++) total += PB.rarity[list[i].rarity].weight;
+    var list = PB.species, boost = PB.forest.rareBoost, total = 0, i, w;
+    var weights = list.map(function (s) {
+      w = PB.rarity[s.rarity].weight;
+      if (boost && (s.rarity === "rare" || s.rarity === "epic")) w *= 5;
+      total += w; return w;
+    });
     var r = rand() * total;
-    for (i = 0; i < list.length; i++) { r -= PB.rarity[list[i].rarity].weight; if (r <= 0) return list[i]; }
+    for (i = 0; i < list.length; i++) { r -= weights[i]; if (r <= 0) return list[i]; }
     return list[list.length - 1];
   }
 
@@ -25,8 +29,8 @@
       x: b.x0 + 20 + rand() * (b.x1 - b.x0 - 40),
       baseY: y, y: y,
       dirX: rand() < 0.5 ? -1 : 1,
-      speed: 9 + rand() * 14 + (sp.skittish || 0) * 14,
-      bobAmp: 4 + rand() * 4, bobSpd: 1.6 + rand(),
+      speed: 26 + rand() * 22 + (sp.skittish || 0) * 60, // fast & dodgy — hard to click
+      bobAmp: 6 + rand() * 6, bobSpd: 2.2 + rand() * 1.5,
       phase: rand() * Math.PI * 2,
       face: 1,
       life: 16 + rand() * 16,
@@ -40,7 +44,7 @@
     list: function () { return entities; },
 
     update: function (dt) {
-      if (PB.scene.current() !== "forest") { entities = []; return; }
+      if (PB.scene.current() !== "forest" || PB.forest.view !== "spot") { entities = []; return; }
       var b = PB.scene.bounds();
       for (var i = entities.length - 1; i >= 0; i--) {
         var e = entities[i];
@@ -48,7 +52,7 @@
         if (e.state === "in") { e.alpha = Math.min(1, e.alpha + dt * 2.5); if (e.alpha >= 1) e.state = "live"; }
         else if (e.state === "out") { e.alpha -= dt * 2.2; if (e.alpha <= 0) { entities.splice(i, 1); continue; } }
         e.retarget -= dt;
-        if (e.retarget <= 0) { e.retarget = 1.5 + rand() * 2.5; if (rand() < 0.4) e.dirX *= -1; }
+        if (e.retarget <= 0) { e.retarget = 0.5 + rand() * 1.4; if (rand() < 0.55) e.dirX *= -1; } // dodgy
         e.x += e.dirX * e.speed * dt;
         if (e.x < b.x0) { e.x = b.x0; e.dirX = 1; }
         if (e.x > b.x1) { e.x = b.x1; e.dirX = -1; }

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Poke Bug — A Cozy Bug Collecting Game</title>
-  <meta name="description" content="A cozy 2D bug-collecting fan game. Catch bugs in the Woods, raise them in jars in your Garden, and display them in your Museum." />
+  <meta name="description" content="A cozy bug-collecting fan game: enter the forest shrine to catch bugs, grow them in your garden, and display them in your museum." />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
@@ -12,31 +12,46 @@
     <canvas id="screen" width="960" height="540"></canvas>
 
     <div id="ui-layer">
-      <!-- Heads up display -->
       <div id="hud" class="hud hidden">
         <div class="hud-pill"><span class="hud-icon">🕑</span><span id="clock-text">Day 1 · 8:00</span></div>
         <div class="hud-pill"><span class="hud-icon">🍬</span><span id="candy-text">0</span></div>
         <div class="hud-pill"><span class="hud-icon">🏛</span><span id="dex-text">0/5</span></div>
+        <button class="hud-pill hud-btn" id="hud-bag"><span class="hud-icon">🎒</span><span id="bag-text">0</span></button>
       </div>
 
       <div id="loc-label" class="loc-label hidden"></div>
       <div id="prompt" class="prompt hidden"></div>
       <div id="toasts" class="toasts"></div>
 
-      <!-- Museum controls (only shown in the Museum) -->
+      <!-- Forest shrine: choose a path -->
+      <div id="forest-paths" class="forest-paths hidden">
+        <button class="path-btn" data-side="left">⛩️<br>Left path</button>
+        <button class="path-btn" data-side="right">⛩️<br>Right path</button>
+      </div>
+      <!-- In a spot: leave back to the shrine -->
+      <button id="spot-leave" class="spot-leave hidden btn-small">← Back to shrine</button>
+
+      <!-- Garden food tray + upgrade -->
+      <div id="garden-tray" class="garden-tray hidden">
+        <div class="tray-foods" id="tray-foods"></div>
+        <button class="btn-small honey" id="garden-upgrade-btn">🌱 Upgrade Garden</button>
+      </div>
+
+      <!-- Museum controls -->
       <div id="museum-bar" class="museum-bar hidden">
         <div class="mb-info" id="mb-info"></div>
         <button class="btn-small honey" id="mb-invite">🔔 Open the doors</button>
       </div>
 
-      <!-- Bottom navigation: the three places -->
+      <!-- Bottom navigation -->
       <div id="navbar" class="navbar hidden">
         <button data-nav="forest"><span class="nav-em">🌳</span><span>Forest</span><small>catch</small></button>
-        <button data-nav="garden"><span class="nav-em">🌷</span><span>Garden</span><small>raise</small></button>
+        <button data-nav="garden"><span class="nav-em">🌷</span><span>Garden</span><small>grow</small></button>
         <button data-nav="museum"><span class="nav-em">🏛</span><span>Museum</span><small>display</small></button>
+        <button data-nav="shop"><span class="nav-em">🛒</span><span>Shop</span><small>gear</small></button>
       </div>
 
-      <!-- Catch mini-game overlay -->
+      <!-- Catch mini-game -->
       <div id="catch-overlay" class="overlay hidden">
         <div class="catch-box">
           <div class="catch-title" id="catch-title">A wild bug!</div>
@@ -45,28 +60,65 @@
             <div class="catch-zone" id="catch-zone"></div>
             <div class="catch-marker" id="catch-marker"></div>
           </div>
-          <div class="catch-hint">Press <kbd>Space</kbd> or tap when the marker is in the green zone!</div>
+          <div class="catch-hint">Tap / <kbd>Space</kbd> while the marker is in the green — quick, it's shrinking!</div>
           <div class="catch-attempts" id="catch-attempts"></div>
         </div>
       </div>
 
-      <!-- Feed / manage card (opens when you tap a jar in the Garden) -->
-      <div id="feedcard" class="overlay hidden">
-        <div class="feed-box">
-          <button class="panel-close" id="feed-close" aria-label="Close">✕</button>
-          <div class="feed-art" id="feed-art"></div>
-          <div class="feed-name" id="feed-name"></div>
-          <div class="feed-sub" id="feed-sub"></div>
-          <div class="bar love"><span id="feed-love"></span></div>
-          <div class="feed-feeds" id="feed-feeds"></div>
-          <div class="feed-actions">
-            <button class="btn-small" id="feed-display">🏛 Display in Museum</button>
-            <button class="btn-small berry" id="feed-release">💔 Release</button>
+      <!-- Backpack grid -->
+      <div id="bag-overlay" class="overlay hidden">
+        <div class="panel-window small">
+          <div class="panel-header">🎒 Backpack <button class="panel-close" id="bag-close">✕</button></div>
+          <div class="panel-body">
+            <div class="section-note" id="bag-note"></div>
+            <div id="bag-grid" class="bag-grid"></div>
+            <div id="bag-actions" class="bag-actions"></div>
           </div>
         </div>
       </div>
 
-      <!-- Title / main menu -->
+      <!-- Shop -->
+      <div id="shop-overlay" class="overlay hidden">
+        <div class="panel-window">
+          <div class="panel-header">🛒 Cozy Shop <button class="panel-close" id="shop-close">✕</button></div>
+          <div class="panel-body" id="shop-body"></div>
+        </div>
+      </div>
+
+      <!-- Small popup: actions for one creature (display / release) -->
+      <div id="bug-popup" class="overlay hidden">
+        <div class="feed-box">
+          <button class="panel-close" id="popup-close">✕</button>
+          <div class="feed-art" id="popup-art"></div>
+          <div class="feed-name" id="popup-name"></div>
+          <div class="feed-sub" id="popup-sub"></div>
+          <div class="bar love"><span id="popup-grow"></span></div>
+          <div class="feed-actions">
+            <button class="btn-small" id="popup-display">🏛 Display in Museum</button>
+            <button class="btn-small berry" id="popup-release">💔 Release</button>
+          </div>
+          <div class="feed-hint">Tip: drag food from the tray onto a jar to grow it bigger! 🍃</div>
+        </div>
+      </div>
+
+      <!-- Garden upgrade popup -->
+      <div id="garden-up" class="overlay hidden">
+        <div class="feed-box">
+          <button class="panel-close" id="gup-close">✕</button>
+          <div id="gup-body"></div>
+        </div>
+      </div>
+
+      <!-- Shrine pick-a-card mini-game -->
+      <div id="cardgame" class="overlay hidden">
+        <div class="card-box">
+          <div class="card-title">Pick a charm! ✨</div>
+          <div class="card-row" id="card-row"></div>
+          <div class="card-result" id="card-result"></div>
+        </div>
+      </div>
+
+      <!-- Title -->
       <div id="title" class="title">
         <div class="title-art">
           <div class="title-logo">Poke<span>Bug</span></div>
@@ -81,16 +133,17 @@
         <div class="title-foot">A non-commercial fan game · Pokémon © Nintendo/Creatures/GAME FREAK · inspired by cozy bug-park games</div>
       </div>
 
-      <!-- Help overlay -->
+      <!-- Help -->
       <div id="help" class="overlay hidden">
         <div class="help-box">
           <h2>How to Play</h2>
           <ul>
-            <li>🌳 <b>Forest</b> — <b>click or tap</b> a creature drifting by to net it. Time the meter into the green zone.</li>
-            <li>🌷 <b>Garden</b> — your creatures live here in jars. Tap a jar to <b>feed</b> it (with candy) and raise its <b>Love</b>; happy creatures drip candy back.</li>
-            <li>🏛 <b>Museum</b> — from a Garden jar, choose <b>Display in Museum</b>. Then <b>open the doors</b> and friends visit with candy — more when an exhibit matches the habitat they love.</li>
-            <li>Switch places with the bottom bar (or <kbd>1</kbd>/<kbd>2</kbd>/<kbd>3</kbd>). There's a gentle day/night cycle — fireflies come out at night.</li>
-            <li>Your game <b>auto-saves</b>. <kbd>Esc</kbd> closes a window; <kbd>H</kbd> shows this help.</li>
+            <li>⛩️ <b>Forest</b> — enter the shrine and pick a <b>path</b>. You'll find a bug spot, candy, food, or a charm game. In a bug spot, <b>tap a fast-moving creature</b>, then stop the <b>shrinking</b> catch bar in the green!</li>
+            <li>🎒 <b>Backpack</b> — caught creatures take up space by size on a grid. Drag to tidy them; upgrade the bag in the Shop.</li>
+            <li>🌷 <b>Garden</b> — <b>drag food</b> onto a jar to grow your creature. Bigger = worth more candy! Upgrade the garden to grow faster.</li>
+            <li>🏛 <b>Museum</b> — display grown creatures, then <b>open the doors</b> for visiting friends and candy.</li>
+            <li>🛒 <b>Shop</b> — buy a better net, a bigger backpack and food.</li>
+            <li>Switch places with the bottom bar. <kbd>Esc</kbd> closes a window; <kbd>H</kbd> shows this help.</li>
           </ul>
           <button class="btn-primary" id="btn-help-close">Got it!</button>
         </div>
@@ -103,12 +156,15 @@
   <script src="js/audio.js"></script>
   <script src="js/save.js"></script>
   <script src="js/state.js"></script>
+  <script src="js/bag.js"></script>
   <script src="js/time.js"></script>
   <script src="js/scene.js"></script>
+  <script src="js/forest.js"></script>
   <script src="js/spawns.js"></script>
   <script src="js/catching.js"></script>
   <script src="js/collection.js"></script>
-  <script src="js/raise.js"></script>
+  <script src="js/garden.js"></script>
+  <script src="js/shop.js"></script>
   <script src="js/museum.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/input.js"></script>

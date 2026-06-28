@@ -1,37 +1,31 @@
 /* ===========================================================================
-   catching.js — the timing-based catch mini-game.
-   A marker sweeps a meter; press the action key while it sits in the green
-   "catch zone". Better nets widen the zone; skittish bugs move the marker
-   faster and shrink the zone. Three attempts before a bug bolts.
+   catching.js — the catch mini-game. The marker sweeps while the green zone
+   steadily SHRINKS; press/tap while the marker is inside it before it closes.
+   A better Net (shop) starts the zone wider and shrinks it slower. Skittish
+   creatures sweep faster and close quicker. A miss nips the zone smaller.
    =========================================================================== */
 (function (PB) {
   "use strict";
 
-  var active = false;
-  var entity = null;
-  var sp = null;
-  var pos = 0, dir = 1, speed = 1;
-  var zoneStart = 0, zoneW = 0.4;
-  var attempts = 3;
-  var cooldown = 0; // brief lock after the result so a key press doesn't bleed
+  var active = false, entity = null, sp = null;
+  var pos = 0, dir = 1, speed = 1, zoneW = 0.4, zoneStart = 0, shrink = 0.07, cooldown = 0;
+  var MIN = 0.055;
 
   PB.catching = {
     isActive: function () { return active; },
 
     begin: function (e) {
-      entity = e;
-      sp = PB.speciesById[e.sid];
+      entity = e; sp = PB.speciesById[e.sid];
       var sk = sp.skittish || 0;
-      zoneW = PB.catchZone(sk);
+      zoneW = Math.max(0.22, PB.catchZone() * (1 - sk * 0.25));
       zoneStart = Math.random() * (1 - zoneW);
-      pos = 0; dir = 1;
-      speed = 0.85 + sk * 1.25;
-      attempts = 3;
-      active = true;
-      cooldown = 0.15;
-      PB.dexEntry(sp.id); // mark discovered
+      pos = Math.random(); dir = Math.random() < 0.5 ? 1 : -1;
+      speed = 0.95 + sk * 1.5;
+      shrink = PB.catchShrink() * (1 + sk * 1.2);
+      active = true; cooldown = 0.12;
+      PB.dexEntry(sp.id);
       PB.audio.swing();
-      PB.ui.openCatch(sp, zoneStart, zoneW, attempts);
+      PB.ui.openCatch(sp, zoneStart, zoneW);
     },
 
     update: function (dt) {
@@ -40,54 +34,46 @@
       pos += dir * speed * dt;
       if (pos >= 1) { pos = 1; dir = -1; }
       if (pos <= 0) { pos = 0; dir = 1; }
+      zoneW = Math.max(0, zoneW - shrink * dt);
+      if (zoneStart + zoneW > 1) zoneStart = 1 - zoneW;
+      PB.ui.setCatchZone(zoneStart, zoneW);
       PB.ui.setCatchMarker(pos);
+      if (zoneW <= MIN) this._fail();
     },
 
-    // called when the player presses the action key during a catch
     strike: function () {
       if (!active || cooldown > 0) return;
-      var hit = pos >= zoneStart && pos <= zoneStart + zoneW;
-      if (hit) { this._succeed(); return; }
-      attempts -= 1;
+      if (pos >= zoneStart && pos <= zoneStart + zoneW) { this._succeed(); return; }
       PB.audio.fail();
-      if (attempts <= 0) { this._fail(); return; }
-      // a miss: the bug gets twitchy — faster marker, shifted zone
-      speed += 0.35;
-      zoneStart = Math.random() * (1 - zoneW);
-      PB.ui.setCatchZone(zoneStart, zoneW);
-      PB.ui.setCatchAttempts("Missed! " + attempts + " " + (attempts === 1 ? "try" : "tries") + " left");
-      cooldown = 0.12;
+      cooldown = 0.1;
+      zoneW = Math.max(0, zoneW - 0.05); // a miss costs you a little zone
+      PB.ui.setCatchAttempts("Missed! Keep trying…");
     },
 
-    cancel: function () {
-      if (!active) return;
-      active = false; entity = null; sp = null;
-      PB.ui.closeCatch();
-    },
+    cancel: function () { if (!active) return; active = false; entity = null; sp = null; PB.ui.closeCatch(); },
 
     _succeed: function () {
-      var base = sp.baseSize;
-      var size = Math.round(base * (0.72 + Math.random() * 0.56) * 10) / 10;
-      var firstCatch = (PB.dexEntry(sp.id).caught === 0);
-      var record = PB.collection.addCatch(sp.id, size);
-      PB.spawns.remove(entity);
-      active = false;
-      PB.ui.closeCatch();
-      PB.audio.catch();
-      var msg = "Caught " + sp.name + "! (" + size + " mm)";
-      if (firstCatch) msg = "✨ New! " + msg;
-      else if (record) msg = "📏 Record size! " + msg;
-      PB.ui.toast(msg, "good");
-      PB.state.flags.tutorialCatch = true;
+      var bug = PB.bag.add(sp.id);
+      active = false; PB.ui.closeCatch(); PB.audio.catch();
+      if (bug) {
+        var e = PB.dexEntry(sp.id), sz = PB.sizeOf(bug);
+        e.caught += 1; if (sz > e.bestSize) e.bestSize = sz;
+        PB.state.stats.totalCaught += 1;
+        PB.state.flags.tutorialCatch = true;
+        if (entity) PB.spawns.remove(entity);
+        PB.ui.toast("Caught " + sp.name + "! 🎉 Tucked into your backpack.", "good");
+      } else {
+        if (entity) PB.spawns.scare(entity);
+        PB.ui.toast("Caught " + sp.name + "… but your backpack is full!", "");
+      }
       entity = null; sp = null;
     },
 
     _fail: function () {
-      PB.ui.setCatchAttempts("It wriggled free and got away!");
-      PB.spawns.scare(entity);
-      cooldown = 999;            // lock out further strikes during the wind-down
-      var self = this;
-      setTimeout(function () { if (active) self.cancel(); }, 700);
+      active = false; PB.ui.closeCatch(); PB.audio.fail();
+      if (entity) PB.spawns.scare(entity);
+      PB.ui.toast("It wriggled free and darted off!", "");
+      entity = null; sp = null;
     },
   };
 
