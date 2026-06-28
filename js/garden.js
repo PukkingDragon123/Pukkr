@@ -1,13 +1,12 @@
 /* ===========================================================================
    garden.js — growing creatures. A creature's `grow` (0..1) rises slowly over
    time (faster the better your garden), and faster when you feed it. As it
-   grows it gets bigger and worth more. Grown creatures gently drip candy.
+   grows it gets bigger and worth more (museum income + fight power).
    =========================================================================== */
 (function (PB) {
   "use strict";
 
   var PASSIVE = 0.0045;  // grow/sec at garden level 0
-  var DRIP    = 0.03;    // candy/sec scaling
 
   PB.garden = {
     feed: function (uid, feedId) {
@@ -25,17 +24,13 @@
       return { ok: true, full: b.grow >= 1 && before < 1, gained: b.grow - before };
     },
 
+    // creatures grow a little on their own over time (faster with garden upgrades)
     update: function (dt) {
-      var g = PB.gardenGrowth(), d = PB.gardenDrip(), earned = 0;
-      var bugs = PB.state.bugs;
+      var g = PB.gardenGrowth(), bugs = PB.state.bugs;
       for (var i = 0; i < bugs.length; i++) {
         var b = bugs[i];
         if (b.grow < 1) b.grow = Math.min(1, b.grow + PASSIVE * g * dt);
-        b.candyBuf = (b.candyBuf || 0) + DRIP * d * (0.35 + b.grow) * dt;
-        if (b.candyBuf >= 1) { var w = Math.floor(b.candyBuf); b.candyBuf -= w; earned += w; }
       }
-      if (earned > 0) PB.addCandy(earned);
-      return earned;
     },
   };
 

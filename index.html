@@ -15,7 +15,7 @@
       <div id="flash" class="flash"></div>
       <div id="hud" class="hud hidden">
         <div class="hud-pill"><span class="hud-icon">🕑</span><span id="clock-text">Day 1 · 8:00</span></div>
-        <div class="hud-pill"><span class="hud-icon">🍬</span><span id="candy-text">0</span></div>
+        <div class="hud-pill"><span class="hud-icon">💰</span><span id="candy-text">0</span></div>
         <div class="hud-pill"><span class="hud-icon">🏛</span><span id="dex-text">0/5</span></div>
         <button class="hud-pill hud-btn" id="hud-bag"><span class="hud-icon">🎒</span><span id="bag-text">0</span></button>
       </div>
@@ -32,7 +32,7 @@
       <!-- In a spot: leave back to the shrine -->
       <button id="spot-leave" class="spot-leave hidden btn-small">← Back to shrine</button>
 
-      <!-- Garden food tray + upgrade -->
+      <!-- Museum food tray + garden upgrade -->
       <div id="garden-tray" class="garden-tray hidden">
         <div class="tray-foods" id="tray-foods"></div>
         <button class="btn-small honey" id="garden-upgrade-btn">🌱 Upgrade Garden</button>
@@ -41,15 +41,15 @@
       <!-- Museum controls -->
       <div id="museum-bar" class="museum-bar hidden">
         <div class="mb-info" id="mb-info"></div>
-        <button class="btn-small honey" id="mb-invite">🔔 Open the doors</button>
+        <button class="btn-small honey" id="mb-invite">🔔 Open the museum</button>
       </div>
 
       <!-- Bottom navigation -->
       <div id="navbar" class="navbar hidden">
         <button data-nav="forest"><span class="nav-em">🌳</span><span>Forest</span><small>catch</small></button>
         <button data-nav="beach"><span class="nav-em">🏖️</span><span>Beach</span><small>catch</small></button>
-        <button data-nav="garden"><span class="nav-em">🌷</span><span>Garden</span><small>grow</small></button>
-        <button data-nav="museum"><span class="nav-em">🏛</span><span>Museum</span><small>display</small></button>
+        <button data-nav="museum"><span class="nav-em">🏛</span><span>Museum</span><small>raise</small></button>
+        <button data-nav="fight"><span class="nav-em">⚔️</span><span>Arena</span><small>fight</small></button>
         <button data-nav="shop"><span class="nav-em">🛒</span><span>Shop</span><small>gear</small></button>
       </div>
 
@@ -112,7 +112,6 @@
           <div class="feed-sub" id="popup-sub"></div>
           <div class="bar love"><span id="popup-grow"></span></div>
           <div class="feed-actions">
-            <button class="btn-small" id="popup-display">🏛 Display in Museum</button>
             <button class="btn-small berry" id="popup-release">💔 Release</button>
           </div>
           <div class="feed-hint">Tip: drag food from the tray onto a jar to grow it bigger! 🍃</div>
@@ -156,11 +155,11 @@
         <div class="help-box">
           <h2>How to Play</h2>
           <ul>
-            <li>⛩️ <b>Forest</b> — enter the shrine and pick a <b>path</b>. You'll find a bug spot, candy, food, or a charm game. In a bug spot, <b>tap a fast-moving creature</b>, then stop the <b>shrinking</b> catch bar in the green!</li>
+            <li>⛩️ <b>Forest / Beach</b> — pick a path at the shrine, then <b>tap a fast creature</b> and stop the <b>shrinking</b> catch bar in the green. Hit the bright <b>sweet spot</b> for a bigger catch!</li>
             <li>🎒 <b>Backpack</b> — caught creatures take up space by size on a grid. Drag to tidy them; upgrade the bag in the Shop.</li>
-            <li>🌷 <b>Garden</b> — <b>drag food</b> onto a jar to grow your creature. Bigger = worth more candy! Upgrade the garden to grow faster.</li>
-            <li>🏛 <b>Museum</b> — display grown creatures, then <b>open the doors</b> for visiting friends and candy.</li>
-            <li>🛒 <b>Shop</b> — buy a better net, a bigger backpack and food.</li>
+            <li>🏛 <b>Museum</b> — keep your creatures in jars here. <b>Drag food</b> onto a jar to grow it bigger (worth more!), and <b>open the museum</b> to earn <b>money</b> 💰.</li>
+            <li>⚔️ <b>Arena</b> — <b>click to fight</b>! Bigger, grown creatures hit harder. Beat waves of foes for money.</li>
+            <li>🛒 <b>Shop</b> — better net, bigger backpack, food, and a Plane Ticket to the Beach.</li>
             <li>Switch places with the bottom bar. <kbd>Esc</kbd> closes a window; <kbd>H</kbd> shows this help.</li>
           </ul>
           <button class="btn-primary" id="btn-help-close">Got it!</button>
@@ -185,7 +184,9 @@
   <script src="js/garden.js"></script>
   <script src="js/shop.js"></script>
   <script src="js/museum.js"></script>
+  <script src="js/fight.js"></script>
   <script src="js/ui.js"></script>
+
   <script src="js/input.js"></script>
   <script src="js/fx.js"></script>
   <script src="js/main.js"></script>

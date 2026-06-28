@@ -2,20 +2,19 @@
 
 A **cozy 2D bug-collecting fan game** in a soft, hand-painted style:
 
-- ⛩️ **Forest** — enter through a little shrine and pick the **left or right path**.
-  You'll find a bug spot (tap a fast, dodgy creature, then beat the **shrinking**
-  catch bar — hit the bright **sweet spot** for a bigger catch!), a candy stash,
-  a basket of food, a pick-a-charm game, or nothing. Every catch ends on a
-  **"You caught it!"** screen showing the creature, its size, and any NEW/RECORD.
-- 🏖️ **Beach** — buy a **Plane Ticket** in the Shop to unlock the seaside and meet
-  brand-new creatures (Corphish, Dwebble, Anorith).
-- 🎒 **Backpack** — caught creatures take up **space by size** on a 5×5 grid; drag
-  to tidy them. Upgrade the bag for more room.
-- 🌷 **Garden** — **drag food onto a jar** to grow your creature. The bigger it
-  grows, the more it's worth! Upgrade the garden to grow faster and earn more.
-- 🏛 **Museum** — display your grown creatures and **open the doors** for visiting
-  friends, who leave candy.
-- 🛒 **Shop** — buy a better net, a bigger backpack, and food.
+- ⛩️ **Forest / Beach** — enter the shrine and pick the **left or right path**:
+  a bug spot (tap a fast, dodgy creature, then beat the **shrinking** catch bar —
+  hit the bright **sweet spot** for a bigger catch!), a money stash, food, a
+  pick-a-charm game, or nothing. Every catch ends on a **"You caught it!"** screen.
+  Buy a **Plane Ticket** in the Shop to unlock the **Beach** and its new creatures.
+- 🎒 **Backpack** — caught creatures take up **space by size** on a grid; drag to tidy.
+- 🏛 **Museum** — your creatures live here in jars. **Drag food onto a jar** to grow
+  it bigger (bigger = worth more), and **open the museum** to earn **money** 💰.
+- ⚔️ **Arena** — a **clicker battle**: click to attack waves of foes. The bigger and
+  more grown your creatures, the harder you hit. Winning pays money.
+- 🛒 **Shop** — better net, bigger backpack, garden care, food, and the Plane Ticket.
+
+The scenes have a soft **2.5D parallax** and **foliage that rustles** as bugs brush past.
 
 Inspired by laid-back bug-park collecting games. Everything bobs and squishes for
 a soft, bouncy feel. The five forest creatures are hand-drawn art; the beach
@@ -40,20 +39,19 @@ Mostly you just **click / tap / drag**. The bottom bar switches places.
 
 | Action | Keys |
 | --- | --- |
-| Catch (tap a creature in a forest spot) | **click / tap** it (or `Space`) |
-| Forest / Garden / Museum / Shop | `1` / `2` / `3` / `4` |
+| Catch (tap a creature in a spot) · Fight (click the foe) | **click / tap** (or `Space`) |
+| Forest / Beach / Museum / Arena / Shop | `1` / `2` / `3` / `4` / `5` |
 | Backpack | `B` |
 | Help · Close a window | `H` · `Esc` |
 
-1. **Forest** — pick a path at the shrine. In a bug spot, **tap a fast, dodgy
-   creature** to start the catch, then press/tap while the marker is in the green
-   — but the zone keeps **shrinking**, so be quick! A better **net** (Shop) helps.
-2. **Backpack** — your catch is stored on a grid by its size. Drag jars to tidy
-   them; a full bag means you must release or display something first.
-3. **Garden** — **drag food** from the tray onto a jar to grow your creature.
-   Bigger = worth more candy. **Upgrade Garden** to grow faster and drip more.
-4. **Museum** — tap a Garden jar → **Display in Museum**, then **open the doors**
-   for visiting friends and candy.
+1. **Forest / Beach** — pick a path at the shrine. In a bug spot, **tap a fast,
+   dodgy creature**, then tap/press while the marker is in the green — the zone
+   keeps **shrinking**, so aim for the bright **sweet spot**! A better **net** helps.
+2. **Backpack** — your catch is stored on a grid by its size. Drag jars to tidy them.
+3. **Museum** — **drag food** from the tray onto a jar to grow your creature
+   (bigger = worth more), then **open the museum** to earn **money** 💰.
+4. **Arena** — **click to fight** waves of foes. Bigger, grown creatures deal more
+   damage (click + idle). Each win pays money; chase higher waves.
 
 ## What's where
 
@@ -65,14 +63,15 @@ js/
   data.js         # content: creatures, footprints, upgrades, food, forest spots
   art.js          # registry/loader + drawing for the hand-drawn art
   bag.js          # the spatial 5x5 backpack (footprints, placement)
-  scene.js        # painterly Forest (with torii) / Garden / Museum backgrounds
+  scene.js        # painterly Forest/Beach/Museum/Arena backgrounds + parallax + foliage
   forest.js       # shrine paths & random spot outcomes
-  spawns.js       # fast, dodgy creatures in a forest spot
+  spawns.js       # fast, dodgy creatures in a catch spot
   catching.js     # the shrinking-bar catch mini-game
   collection.js   # releasing creatures
-  garden.js       # growing & feeding (drag-and-drop) + candy drip
-  shop.js         # net / backpack / garden upgrades + food
-  museum.js       # displaying jars & visiting friends
+  garden.js       # growing & feeding (drag-and-drop)
+  fight.js        # the clicker battle (power, waves, rewards)
+  shop.js         # net / backpack / garden upgrades + food + plane ticket
+  museum.js       # raise jars & open the museum for money
   time.js · fx.js # day/night cycle · pollen/fireflies/vignette
   ui.js           # all overlays: catch, backpack, shop, popups, tray, cards
   input.js · main.js  # keyboard · boot/loop/scene render/navigation

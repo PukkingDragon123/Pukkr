@@ -22,6 +22,7 @@
       dex: {},
       stats: { totalCaught: 0, candyEarned: 0, daysPlayed: 1 },
       flags: { tutorialCatch: false, beachUnlocked: false },
+      fight: { wave: 1, best: 1 },
       uidSeq: 1,
     };
     return PB.state;
@@ -45,6 +46,8 @@
     data.dex = data.dex || {};
     data.stats = data.stats || { totalCaught: 0, candyEarned: 0, daysPlayed: data.day || 1 };
     data.flags = data.flags || {};
+    data.fight = data.fight || { wave: 1, best: 1 };
+    if (typeof data.fight.wave !== "number") data.fight.wave = 1;
     if (typeof data.candy !== "number") data.candy = 0;
     if (typeof data.day !== "number") data.day = 1;
     if (typeof data.timeSec !== "number") data.timeSec = 0;
@@ -103,7 +106,10 @@
   PB.spendCandy = function (n) { if (PB.state.candy < n) return false; PB.state.candy -= n; return true; };
 
   // ---- museum --------------------------------------------------------------
-  PB.museumSpeciesCount = function () { return Object.keys(PB.state.museum.donated).length; };
+  // distinct species currently in jars (your "exhibits")
+  PB.museumSpeciesCount = function () {
+    var set = {}; PB.state.bugs.forEach(function (b) { set[b.sid] = 1; }); return Object.keys(set).length;
+  };
   PB.museumTier = function () {
     var n = PB.museumSpeciesCount(), t = PB.museumTiers[0];
     for (var i = 0; i < PB.museumTiers.length; i++) if (n >= PB.museumTiers[i].at) t = PB.museumTiers[i];

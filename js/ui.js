@@ -51,7 +51,6 @@
       $("bag-close").addEventListener("click", function () { el.bagOverlay.classList.add("hidden"); });
       $("shop-close").addEventListener("click", function () { el.shopOverlay.classList.add("hidden"); });
       $("popup-close").addEventListener("click", function () { PB.ui.closePopup(); });
-      $("popup-display").addEventListener("click", popupDisplay);
       $("popup-release").addEventListener("click", popupRelease);
       $("gup-close").addEventListener("click", function () { el.gardenUp.classList.add("hidden"); });
       $("garden-upgrade-btn").addEventListener("click", function () { PB.ui.openGardenUpgrade(); });
@@ -116,7 +115,7 @@
       badges += '<span class="rbadge star">' + PB.rarity[sp.rarity].star + " " + PB.rarity[sp.rarity].label + "</span>";
       $("result-badges").innerHTML = badges;
       $("result-size").innerHTML = '<span class="size-label">' + PB.sizeLabel(bug) + '</span><span class="size-mm">' + PB.sizeOf(bug) + ' mm</span>';
-      $("result-candy").innerHTML = "+" + info.candy + " 🍬 catch bonus";
+      $("result-candy").innerHTML = "+" + info.candy + " 💰 catch bonus";
       el.result.classList.remove("hidden");
       PB.audio.candy();
     },
@@ -141,8 +140,10 @@
     showMuseumBar: function (v) { el.museumBar.classList.toggle("hidden", !v); if (v) this.updateMuseumBar(); },
     updateMuseumBar: function () {
       var t = PB.museumTier();
-      el.mbInfo.innerHTML = "<b>" + esc(t.name) + "</b> · " + PB.museumSpeciesCount() + "/" + PB.species.length + " on display";
-      $("mb-invite").disabled = !PB.museum.canInvite();
+      var open = PB.museum.canOpen();
+      el.mbInfo.innerHTML = "<b>" + esc(t.name) + "</b> · " + PB.state.bugs.length + " jars" +
+        (open ? " · earns <b>" + PB.museum.estimate() + " 💰</b>" : " · come back tomorrow");
+      $("mb-invite").disabled = !open;
     },
 
     // ---- shrine card game --------------------------------------------------
@@ -204,27 +205,27 @@
 
   // ---- shop ----------------------------------------------------------------
   function renderShop() {
-    var head = '<div class="section-note">You have <b>' + PB.state.candy + " 🍬</b>. Spend it on better gear and food.</div>";
+    var head = '<div class="section-note">You have <b>' + PB.state.candy + " 💰</b>. Spend it on better gear and food.</div>";
     var ticket;
     if (PB.state.flags.beachUnlocked) {
       ticket = row(PB.ticket.icon, PB.ticket.name + " — Beach unlocked ✓", "The Beach is open! Visit it from the bottom bar. 🏖️",
         '<button class="btn-small" disabled>Owned</button>');
     } else {
-      ticket = row(PB.ticket.icon, PB.ticket.name, PB.ticket.desc + "<br>Cost: <b>" + PB.ticket.cost + " 🍬</b>",
+      ticket = row(PB.ticket.icon, PB.ticket.name, PB.ticket.desc + "<br>Cost: <b>" + PB.ticket.cost + " 💰</b>",
         '<button class="btn-small honey" data-ticket="1"' + (PB.state.candy >= PB.ticket.cost ? "" : " disabled") + ">Buy</button>");
     }
     var gear = ["net", "bag"].map(function (key) {
       var u = PB.upgrades[key], cur = (key === "net" ? PB.netTier() : PB.bagTier());
       var nt = PB.shop.nextTier(key), action, line;
       if (!nt) { line = "Fully upgraded ✓"; action = '<button class="btn-small" disabled>Max</button>'; }
-      else { line = "Next: <b>" + esc(nt.name) + "</b> — " + nt.cost + " 🍬";
+      else { line = "Next: <b>" + esc(nt.name) + "</b> — " + nt.cost + " 💰";
         action = '<button class="btn-small" data-buy="' + key + '"' + (PB.shop.canBuy(key) ? "" : " disabled") + ">Buy</button>"; }
       return row(u.icon, u.name + " — " + cur.name, u.desc + "<br>" + line, action);
     }).join("");
     var food = "<h3 style='margin:14px 0 8px'>Food (drag onto creatures in the Garden)</h3>" + PB.feeds.map(function (f) {
       var have = PB.state.food[f.id] || 0;
       return row(f.icon, f.name + " <small>(have " + have + ")</small>",
-        "+" + Math.round(f.grow * 100) + "% grow · " + f.cost + " 🍬 each",
+        "+" + Math.round(f.grow * 100) + "% grow · " + f.cost + " 💰 each",
         '<button class="btn-small honey" data-food="' + f.id + ':1"' + (PB.state.candy >= f.cost ? "" : " disabled") + '>×1</button> ' +
         '<button class="btn-small honey" data-food="' + f.id + ':5"' + (PB.state.candy >= f.cost * 5 ? "" : " disabled") + '>×5</button>');
     }).join("");
@@ -236,16 +237,16 @@
     if (b.hasAttribute("data-ticket")) {
       var rt = PB.shop.buyTicket();
       if (rt.ok) PB.ui.toast("✈️ Plane ticket bought! The Beach is now open. 🏖️", "good");
-      else if (rt.reason === "poor") PB.ui.toast("Not enough candy yet.", "");
+      else if (rt.reason === "poor") PB.ui.toast("Not enough money yet.", "");
     } else if (b.hasAttribute("data-buy")) {
       var r = PB.shop.buy(b.getAttribute("data-buy"));
       if (r.ok) PB.ui.toast("Bought " + r.tier.name + "! 🎉", "good");
-      else if (r.reason === "poor") PB.ui.toast("Not enough candy yet.", "");
+      else if (r.reason === "poor") PB.ui.toast("Not enough money yet.", "");
     } else {
       var p = b.getAttribute("data-food").split(":"), q = parseInt(p[1], 10) || 1;
       var rf = PB.shop.buyFood(p[0], q);
-      if (rf.ok) PB.ui.toast("Bought " + q + " food for " + rf.cost + " 🍬", "good");
-      else PB.ui.toast("Not enough candy yet.", "");
+      if (rf.ok) PB.ui.toast("Bought " + q + " food for " + rf.cost + " 💰", "good");
+      else PB.ui.toast("Not enough money yet.", "");
     }
     renderShop(); PB.ui.updateHUD();
   }
@@ -257,23 +258,13 @@
     var sp = PB.speciesById[b.sid];
     $("popup-art").innerHTML = jarImg(b.sid);
     $("popup-name").textContent = sp.name;
-    $("popup-sub").innerHTML = PB.rarity[sp.rarity].star + " · " + PB.sizeOf(b) + " mm · worth " + PB.bugValue(b) + " 🍬";
+    $("popup-sub").innerHTML = PB.rarity[sp.rarity].star + " · " + PB.sizeOf(b) + " mm · worth " + PB.bugValue(b) + " 💰";
     $("popup-grow").style.width = Math.round(b.grow * 100) + "%";
-    var disp = $("popup-display");
-    disp.disabled = PB.museum.has(b.sid);
-    disp.textContent = PB.museum.has(b.sid) ? "🏛 Already displayed" : "🏛 Display in Museum";
     return true;
-  }
-  function popupDisplay() {
-    var d = PB.museum.donate(popupUid);
-    if (!d.ok) { if (d.reason === "dup") PB.ui.toast("The museum already displays a " + d.name + ".", ""); return; }
-    var msg = "Displayed " + d.name + "! +" + d.reward + " 🍬";
-    if (d.tierUp) msg += "<br>🏛 Your museum is now a " + d.tierUp.name + "!";
-    PB.ui.toast(msg, "candy"); PB.ui.closePopup(); PB.ui.updateHUD();
   }
   function popupRelease() {
     var r = PB.collection.release(popupUid);
-    if (r) PB.ui.toast("Released for +" + r + " 🍬", "candy");
+    if (r) PB.ui.toast("Released for +" + r + " 💰", "candy");
     PB.ui.closePopup(); PB.ui.updateHUD();
   }
 
@@ -298,12 +289,12 @@
 
   function renderGardenUp() {
     var cur = PB.gardenTier(), nt = PB.shop.nextTier("garden");
-    var html = '<div class="feed-name">🌱 Garden</div>' +
-      '<div class="feed-sub">Current: <b>' + esc(cur.name) + "</b> — growth ×" + cur.growth + ", candy ×" + cur.drip + "</div>";
+    var html = '<div class="feed-name">🌱 Garden Care</div>' +
+      '<div class="feed-sub">Current: <b>' + esc(cur.name) + "</b> — creatures grow ×" + cur.growth + " faster</div>";
     if (!nt) html += '<p style="margin:14px 0">Your garden is as lush as it gets! 🌸</p>';
     else {
-      html += '<p style="margin:14px 0 10px">Next: <b>' + esc(nt.name) + "</b> — growth ×" + nt.growth +
-        ", candy ×" + nt.drip + "<br>Cost: " + nt.cost + " 🍬</p>" +
+      html += '<p style="margin:14px 0 10px">Next: <b>' + esc(nt.name) + "</b> — grow ×" + nt.growth +
+        " faster<br>Cost: " + nt.cost + " 💰</p>" +
         '<button class="btn-primary" id="gup-buy"' + (PB.shop.canBuy("garden") ? "" : " disabled") + ">Upgrade</button>";
     }
     el.gupBody.innerHTML = html;
@@ -311,16 +302,14 @@
     if (btn) btn.addEventListener("click", function () {
       var r = PB.shop.buy("garden");
       if (r.ok) { PB.ui.toast("Garden upgraded to " + r.tier.name + "! 🌷", "good"); renderGardenUp(); PB.ui.updateHUD(); }
-      else PB.ui.toast("Not enough candy yet.", "");
+      else PB.ui.toast("Not enough money yet.", "");
     });
   }
 
   function doInvite() {
-    var v = PB.museum.invite();
-    if (!v) { PB.ui.toast("Friends already visited today. Come back tomorrow!", ""); return; }
-    v.visits.forEach(function (vis, i) {
-      setTimeout(function () { PB.ui.toast(vis.friend.emoji + " " + vis.friend.name + " visited! +" + vis.candy + " 🍬", "candy"); }, i * 350);
-    });
+    var v = PB.museum.openDoors();
+    if (!v) { PB.ui.toast("The museum's open for today — come back tomorrow!", ""); return; }
+    PB.ui.toast("🏛 Visitors loved your " + v.count + " jars! +" + v.money + " 💰", "candy");
     PB.ui.updateMuseumBar(); PB.ui.updateHUD();
   }
 
@@ -329,7 +318,7 @@
     Array.prototype.forEach.call(el.cardRow.children, function (c) { c.disabled = true; });
     var rew = PB.forest.cardReward();
     var card = e.currentTarget;
-    if (rew.type === "candy") { card.textContent = "🍬"; el.cardResult.innerHTML = "You won <b>+" + rew.n + " 🍬</b>!"; }
+    if (rew.type === "candy") { card.textContent = "💰"; el.cardResult.innerHTML = "You won <b>+" + rew.n + " 💰</b>!"; }
     else if (rew.type === "item") { card.textContent = rew.feed.icon; el.cardResult.innerHTML = "You won <b>" + rew.qty + "× " + esc(rew.feed.name) + "</b>!"; }
     else { card.textContent = "🍂"; el.cardResult.innerHTML = "Aw, just a leaf. Better luck next time!"; }
     PB.audio.candy();

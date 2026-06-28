@@ -101,7 +101,7 @@
     },
     garden: {
       name: "Garden", icon: "🌱",
-      desc: "Tend the garden so creatures grow faster and drip more candy.",
+      desc: "Tend the garden so your creatures grow bigger faster.",
       tiers: [
         { name: "Plain Patch",   cost: 0,   growth: 1.0, drip: 1.0 },
         { name: "Tended Patch",  cost: 90,  growth: 1.6, drip: 1.4 },

@@ -14,11 +14,12 @@
   var LOC = {
     forest: { name: "Whispering Woods", emoji: "🌳" },
     beach:  { name: "Sunny Beach",      emoji: "🏖️" },
-    garden: { name: "Cozy Garden",      emoji: "🌷" },
     museum: { name: "Bug Museum",       emoji: "🏛" },
+    fight:  { name: "Bug Arena",        emoji: "⚔️" },
   };
   var current = "forest";
   var pre = {};
+  var foliage = {};   // per-scene foreground tufts (interactive)
 
   // ---- painterly helpers ---------------------------------------------------
   function rgba(c, a) { return "rgba(" + c[0] + "," + c[1] + "," + c[2] + "," + a + ")"; }
@@ -272,10 +273,51 @@
     c.closePath(); c.fill();
   }
 
+  // ---- Bug Arena (fight) ---------------------------------------------------
+  function paintArena(c) {
+    var rnd = rng(31313);
+    vgrad(c, 0, 0, W, H * 0.58, "#d9c7ef", "#f3e0ee");        // dusky sky
+    blob(c, W * 0.5, H * 0.1, 240, [255, 240, 220], 0.6);
+    softTree(c, W * 0.07, H * 0.6, 1.0, true);
+    softTree(c, W * 0.94, H * 0.58, 1.1, true);
+    vgrad(c, 0, H * 0.5, W, H * 0.5, "#9ec773", "#7bab57");   // grass
+    // a round dirt arena
+    c.fillStyle = "#cdab74"; c.beginPath(); c.ellipse(W * 0.5, H * 0.74, W * 0.34, H * 0.16, 0, 0, Math.PI * 2); c.fill();
+    c.strokeStyle = "rgba(150,110,60,0.6)"; c.lineWidth = 6; c.stroke();
+    c.fillStyle = "#b9925c"; c.beginPath(); c.ellipse(W * 0.5, H * 0.74, W * 0.28, H * 0.12, 0, 0, Math.PI * 2); c.fill();
+    for (var i = 0; i < 30; i++) blob(c, rnd() * W, H * (0.55 + rnd() * 0.4), 26 + rnd() * 40, [120, 175, 90], 0.12);
+    // little banner flags
+    c.strokeStyle = "rgba(120,90,60,0.7)"; c.lineWidth = 4;
+    c.beginPath(); c.moveTo(W * 0.16, H * 0.4); c.lineTo(W * 0.84, H * 0.34); c.stroke();
+    for (var f = 0; f < 12; f++) {
+      var t = f / 11, fx = W * (0.16 + t * 0.68), fy = H * (0.4 - t * 0.06);
+      c.fillStyle = f % 2 ? "#ef8a8a" : "#f6c453";
+      c.beginPath(); c.moveTo(fx, fy); c.lineTo(fx + 14, fy); c.lineTo(fx + 7, fy + 16); c.closePath(); c.fill();
+    }
+  }
+
   function prerender(id, painter) {
     var cv = document.createElement("canvas"); cv.width = W; cv.height = H;
     painter(cv.getContext("2d")); pre[id] = cv;
   }
+
+  // ---- interactive foreground foliage --------------------------------------
+  function makeFoliage(id) {
+    var rnd = rng(id === "beach" ? 808 : 909), arr = [];
+    var n = 16;
+    for (var i = 0; i < n; i++) {
+      var edge = i < n * 0.6; // most along the very bottom, some mid
+      arr.push({
+        x: 30 + rnd() * (W - 60),
+        y: edge ? H * (0.9 + rnd() * 0.08) : H * (0.72 + rnd() * 0.12),
+        s: 0.8 + rnd() * 1.1,
+        sway: 0, phase: rnd() * Math.PI * 2,
+        kind: id === "beach" ? (rnd() < 0.5 ? "reed" : "grass") : (rnd() < 0.4 ? "flower" : "grass"),
+      });
+    }
+    foliage[id] = arr;
+  }
+  function foliageFor(id) { if (!foliage[id]) makeFoliage(id); return foliage[id]; }
 
   // ---- jar slot layouts ----------------------------------------------------
   function gridSlots(n, x0, x1, yTop, rowH, perRow, jarH) {
@@ -293,8 +335,8 @@
     init: function () {
       prerender("forest", paintForest);
       prerender("beach", paintBeach);
-      prerender("garden", paintGarden);
       prerender("museum", paintMuseum);
+      prerender("fight", paintArena);
     },
     current: function () { return current; },
     name: function () { return LOC[current].name; },
@@ -324,7 +366,65 @@
       return slots;
     },
 
-    draw: function (ctx) { var bg = pre[current]; if (bg) ctx.drawImage(bg, 0, 0, W, H); },
+    hasFoliage: function () { return current === "forest" || current === "beach"; },
+
+    // background drawn with a slight 2.5D pointer-parallax (scaled-up overscan)
+    draw: function (ctx, parX, parY) {
+      var bg = pre[current]; if (!bg) return;
+      var over = 0.06; parX = parX || 0; parY = parY || 0;
+      var ow = W * over, oh = H * over;
+      ctx.drawImage(bg, -ow / 2 - parX * ow * 0.5, -oh / 2 - parY * oh * 0.5, W * (1 + over), H * (1 + over));
+    },
+
+    updateFoliage: function (dt, creatures) {
+      if (!this.hasFoliage()) return;
+      var arr = foliageFor(current);
+      for (var i = 0; i < arr.length; i++) {
+        var t = arr[i];
+        t.phase += dt * 1.5;
+        t.sway *= Math.pow(0.06, dt);           // decay toward rest
+        for (var j = 0; creatures && j < creatures.length; j++) {
+          var c = creatures[j];
+          var dx = c.x - t.x, dy = (c.y + 44) - t.y;
+          if (Math.abs(dx) < 38 && Math.abs(dy) < 50) {
+            t.sway += (dx >= 0 ? -1 : 1) * 0.045 * (c.speed || 20) * dt; // bug brushes past → rustle
+          }
+        }
+        t.sway = Math.max(-0.6, Math.min(0.6, t.sway));
+      }
+    },
+
+    drawForeground: function (ctx, parX, parY) {
+      if (!this.hasFoliage()) return;
+      var arr = foliageFor(current);
+      var ox = (parX || 0) * 18, oy = (parY || 0) * 6;
+      for (var i = 0; i < arr.length; i++) {
+        var t = arr[i], a = t.sway + Math.sin(t.phase) * 0.04;
+        ctx.save();
+        ctx.translate(t.x + ox, t.y + oy);
+        ctx.rotate(a);
+        drawTuft(ctx, t.kind, t.s);
+        ctx.restore();
+      }
+    },
   };
+
+  function drawTuft(c, kind, s) {
+    if (kind === "flower") {
+      c.strokeStyle = "#4f9b54"; c.lineWidth = 3 * s; c.lineCap = "round";
+      c.beginPath(); c.moveTo(0, 0); c.lineTo(0, -22 * s); c.stroke();
+      var cols = ["#ef8a8a", "#f6c453", "#e6a3d0", "#fff"];
+      c.fillStyle = cols[(t_i++) % cols.length];
+      for (var p = 0; p < 5; p++) { var ang = p / 5 * Math.PI * 2; c.beginPath(); c.arc(Math.cos(ang) * 5 * s, -22 * s + Math.sin(ang) * 5 * s, 4 * s, 0, Math.PI * 2); c.fill(); }
+      c.fillStyle = "#f6e27a"; c.beginPath(); c.arc(0, -22 * s, 3 * s, 0, Math.PI * 2); c.fill();
+    } else if (kind === "reed") {
+      c.strokeStyle = "#6f9c49"; c.lineWidth = 3.5 * s; c.lineCap = "round";
+      for (var r = -1; r <= 1; r++) { c.beginPath(); c.moveTo(r * 5 * s, 0); c.quadraticCurveTo(r * 9 * s, -22 * s, r * 7 * s, -40 * s); c.stroke(); }
+    } else { // grass tuft
+      c.strokeStyle = "#5fae5a"; c.lineWidth = 4 * s; c.lineCap = "round";
+      for (var g = -2; g <= 2; g++) { c.beginPath(); c.moveTo(g * 5 * s, 0); c.quadraticCurveTo(g * 9 * s, -20 * s, g * 8 * s, -34 * s); c.stroke(); }
+    }
+  }
+  var t_i = 0;
 
 })(window.PB = window.PB || {});
