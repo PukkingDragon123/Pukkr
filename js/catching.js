@@ -53,18 +53,27 @@
     cancel: function () { if (!active) return; active = false; entity = null; sp = null; PB.ui.closeCatch(); },
 
     _succeed: function () {
-      var bug = PB.bag.add(sp.id);
-      active = false; PB.ui.closeCatch(); PB.audio.catch();
+      // accuracy: how centred the strike was within the zone (0..1)
+      var center = zoneStart + zoneW / 2;
+      var acc = Math.max(0, 1 - Math.abs(pos - center) / (zoneW / 2));
+      var roll = Math.max(0.7, Math.min(1.3, 0.8 + acc * 0.4 + Math.random() * 0.12));
+      var bug = PB.bag.add(sp.id, 0.05, roll);
+      active = false; PB.ui.closeCatch();
       if (bug) {
+        PB.audio.catch();
         var e = PB.dexEntry(sp.id), sz = PB.sizeOf(bug);
-        e.caught += 1; if (sz > e.bestSize) e.bestSize = sz;
+        var isNew = e.caught === 0, isRecord = sz > e.bestSize;
+        e.caught += 1; if (isRecord) e.bestSize = sz;
         PB.state.stats.totalCaught += 1;
         PB.state.flags.tutorialCatch = true;
         if (entity) PB.spawns.remove(entity);
-        PB.ui.toast("Caught " + sp.name + "! 🎉 Tucked into your backpack.", "good");
+        var bonus = Math.max(1, Math.round(PB.rarity[sp.rarity].value * (0.4 + acc * 0.6) * 0.5));
+        PB.addCandy(bonus);
+        PB.ui.openCatchResult({ bug: bug, acc: acc, isNew: isNew, isRecord: isRecord, candy: bonus });
       } else {
+        PB.audio.fail();
         if (entity) PB.spawns.scare(entity);
-        PB.ui.toast("Caught " + sp.name + "… but your backpack is full!", "");
+        PB.ui.toast("Caught " + sp.name + "… but your backpack is full! 🎒", "");
       }
       entity = null; sp = null;
     },

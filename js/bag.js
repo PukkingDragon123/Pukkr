@@ -46,10 +46,11 @@
 
     hasRoomFor: function (sid) { var f = fp(sid); return !!this.findSlot(f.w, f.h); },
 
-    add: function (sid, grow) {
+    add: function (sid, grow, roll) {
       var f = fp(sid), slot = this.findSlot(f.w, f.h);
       if (!slot) return null;
-      var bug = { uid: PB.nextUid(), sid: sid, grow: grow != null ? grow : 0.08, gx: slot.x, gy: slot.y, candyBuf: 0 };
+      var bug = { uid: PB.nextUid(), sid: sid, grow: grow != null ? grow : 0.05,
+        roll: roll != null ? roll : 1, gx: slot.x, gy: slot.y, candyBuf: 0 };
       PB.state.bugs.push(bug);
       return bug;
     },

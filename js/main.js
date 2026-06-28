@@ -95,8 +95,13 @@
   function closeHelp() { helpVisible = false; $("help").classList.add("hidden"); }
 
   // ---- navigation ----------------------------------------------------------
+  function flashScreen() {
+    var f = $("flash"); if (!f) return;
+    f.classList.remove("go"); void f.offsetWidth; f.classList.add("go");
+  }
   function setScene(id) {
     if (id === "forest") PB.forest.enterShrine();
+    if (PB.scene.current() !== id) flashScreen();
     PB.scene.setLocation(id);
     PB.ui.closePopup();
     updateNav(); updateLocLabel(); updateForestUI();

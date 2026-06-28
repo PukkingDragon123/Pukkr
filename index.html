@@ -12,6 +12,7 @@
     <canvas id="screen" width="960" height="540"></canvas>
 
     <div id="ui-layer">
+      <div id="flash" class="flash"></div>
       <div id="hud" class="hud hidden">
         <div class="hud-pill"><span class="hud-icon">🕑</span><span id="clock-text">Day 1 · 8:00</span></div>
         <div class="hud-pill"><span class="hud-icon">🍬</span><span id="candy-text">0</span></div>
@@ -59,10 +60,26 @@
           <div class="catch-bug" id="catch-bug"></div>
           <div class="catch-meter">
             <div class="catch-zone" id="catch-zone"></div>
+            <div class="catch-sweet" id="catch-sweet"></div>
             <div class="catch-marker" id="catch-marker"></div>
           </div>
-          <div class="catch-hint">Tap / <kbd>Space</kbd> while the marker is in the green — quick, it's shrinking!</div>
+          <div class="catch-hint">Tap / <kbd>Space</kbd> in the green — aim for the bright <b>sweet spot</b> for a bigger catch!</div>
           <div class="catch-attempts" id="catch-attempts"></div>
+        </div>
+      </div>
+
+      <!-- "You caught it!" result + size screen -->
+      <div id="catch-result" class="overlay hidden">
+        <div class="result-box">
+          <div class="result-spark s1">✨</div><div class="result-spark s2">🌟</div>
+          <div class="result-spark s3">✨</div><div class="result-spark s4">⭐</div>
+          <div class="result-banner" id="result-banner">You caught it!</div>
+          <div class="result-art" id="result-art"></div>
+          <div class="result-name" id="result-name"></div>
+          <div class="result-badges" id="result-badges"></div>
+          <div class="result-size" id="result-size"></div>
+          <div class="result-candy" id="result-candy"></div>
+          <button class="btn-primary" id="result-ok">Nice!</button>
         </div>
       </div>
 

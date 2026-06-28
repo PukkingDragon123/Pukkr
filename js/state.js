@@ -31,6 +31,7 @@
     data.bugs = data.bugs || [];
     data.bugs.forEach(function (b) {
       if (typeof b.grow !== "number") b.grow = 0.1;
+      if (typeof b.roll !== "number") b.roll = 1;
       if (typeof b.gx !== "number") b.gx = 0;
       if (typeof b.gy !== "number") b.gy = 0;
     });
@@ -70,14 +71,25 @@
   PB.gardenDrip = function () { return tier("garden").drip; };
 
   // ---- creature size / value ----------------------------------------------
-  // grow 0 -> 0.8x base, grow 1 -> 1.7x base. Value scales the same way.
+  // Each catch has a `roll` (how big it was when caught, ~0.7..1.3) and `grow`
+  // (0..1, raised in the Garden). Both make it bigger and worth more.
   PB.sizeOf = function (bug) {
     var sp = PB.speciesById[bug.sid];
-    return Math.round(sp.baseSize * (0.8 + bug.grow * 0.9) * 10) / 10;
+    var roll = bug.roll || 1;
+    return Math.round(sp.baseSize * roll * (0.85 + (bug.grow || 0) * 0.85) * 10) / 10;
   };
   PB.bugValue = function (bug) {
     var sp = PB.speciesById[bug.sid];
-    return Math.max(1, Math.round(PB.rarity[sp.rarity].value * (0.8 + bug.grow * 0.9)));
+    return Math.max(1, Math.round(PB.rarity[sp.rarity].value * (PB.sizeOf(bug) / sp.baseSize)));
+  };
+  // A friendly size category for the catch screen.
+  PB.sizeLabel = function (bug) {
+    var sp = PB.speciesById[bug.sid], r = PB.sizeOf(bug) / sp.baseSize;
+    if (r < 0.82) return "Tiny";
+    if (r < 0.97) return "Small";
+    if (r < 1.12) return "Average";
+    if (r < 1.32) return "Big";
+    return "Huge";
   };
 
   // ---- dex -----------------------------------------------------------------

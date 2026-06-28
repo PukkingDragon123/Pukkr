@@ -4,7 +4,9 @@ A **cozy 2D bug-collecting fan game** in a soft, hand-painted style:
 
 - ⛩️ **Forest** — enter through a little shrine and pick the **left or right path**.
   You'll find a bug spot (tap a fast, dodgy creature, then beat the **shrinking**
-  catch bar), a candy stash, a basket of food, a pick-a-charm game, or nothing.
+  catch bar — hit the bright **sweet spot** for a bigger catch!), a candy stash,
+  a basket of food, a pick-a-charm game, or nothing. Every catch ends on a
+  **"You caught it!"** screen showing the creature, its size, and any NEW/RECORD.
 - 🏖️ **Beach** — buy a **Plane Ticket** in the Shop to unlock the seaside and meet
   brand-new creatures (Corphish, Dwebble, Anorith).
 - 🎒 **Backpack** — caught creatures take up **space by size** on a 5×5 grid; drag

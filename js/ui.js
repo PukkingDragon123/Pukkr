@@ -37,7 +37,8 @@
       el.clock = $("clock-text"); el.candy = $("candy-text"); el.dex = $("dex-text"); el.bag = $("bag-text");
       el.prompt = $("prompt"); el.toasts = $("toasts");
       el.catchOverlay = $("catch-overlay"); el.catchTitle = $("catch-title"); el.catchBug = $("catch-bug");
-      el.catchZone = $("catch-zone"); el.catchMarker = $("catch-marker"); el.catchAttempts = $("catch-attempts");
+      el.catchZone = $("catch-zone"); el.catchSweet = $("catch-sweet"); el.catchMarker = $("catch-marker"); el.catchAttempts = $("catch-attempts");
+      el.result = $("catch-result");
       el.bagOverlay = $("bag-overlay"); el.bagGrid = $("bag-grid"); el.bagNote = $("bag-note");
       el.shopOverlay = $("shop-overlay"); el.shopBody = $("shop-body");
       el.popup = $("bug-popup"); el.tray = $("garden-tray"); el.trayFoods = $("tray-foods");
@@ -55,6 +56,7 @@
       $("gup-close").addEventListener("click", function () { el.gardenUp.classList.add("hidden"); });
       $("garden-upgrade-btn").addEventListener("click", function () { PB.ui.openGardenUpgrade(); });
       $("mb-invite").addEventListener("click", doInvite);
+      $("result-ok").addEventListener("click", function () { el.result.classList.add("hidden"); });
       el.shopBody.addEventListener("click", onShopClick);
       [el.bagOverlay, el.shopOverlay, el.popup, el.gardenUp, el.cardgame].forEach(function (ov) {
         ov.addEventListener("click", function (e) { if (e.target === ov) ov.classList.add("hidden"); });
@@ -79,10 +81,10 @@
     },
 
     anyOverlayOpen: function () {
-      return [el.bagOverlay, el.shopOverlay, el.popup, el.gardenUp, el.cardgame].some(function (o) { return !o.classList.contains("hidden"); });
+      return [el.bagOverlay, el.shopOverlay, el.popup, el.gardenUp, el.cardgame, el.result].some(function (o) { return !o.classList.contains("hidden"); });
     },
     isBlocking: function () { return this.anyOverlayOpen(); },
-    closeOverlays: function () { [el.bagOverlay, el.shopOverlay, el.popup, el.gardenUp, el.cardgame].forEach(function (o) { o.classList.add("hidden"); }); },
+    closeOverlays: function () { [el.bagOverlay, el.shopOverlay, el.popup, el.gardenUp, el.cardgame, el.result].forEach(function (o) { o.classList.add("hidden"); }); },
 
     // ---- catch overlay -----------------------------------------------------
     openCatch: function (sp, zs, zw) {
@@ -92,10 +94,32 @@
       el.catchAttempts.textContent = PB.rarity[sp.rarity].star + " " + PB.rarity[sp.rarity].label;
       el.catchOverlay.classList.remove("hidden");
     },
-    setCatchZone: function (s, w) { el.catchZone.style.left = (s * 100) + "%"; el.catchZone.style.width = (w * 100) + "%"; },
+    setCatchZone: function (s, w) {
+      el.catchZone.style.left = (s * 100) + "%"; el.catchZone.style.width = (w * 100) + "%";
+      var sweetW = Math.max(0.04, w * 0.22);
+      el.catchSweet.style.left = ((s + w / 2) * 100) + "%";
+      el.catchSweet.style.width = (sweetW * 100) + "%";
+    },
     setCatchMarker: function (p) { el.catchMarker.style.left = (p * 100) + "%"; },
     setCatchAttempts: function (t) { el.catchAttempts.textContent = t; },
     closeCatch: function () { el.catchOverlay.classList.add("hidden"); },
+
+    // ---- "you caught it!" result + size screen ----------------------------
+    openCatchResult: function (info) {
+      var bug = info.bug, sp = PB.speciesById[bug.sid];
+      $("result-banner").textContent = info.acc > 0.85 ? "✨ Perfect catch! ✨" : (info.isNew ? "New discovery!" : "You caught it!");
+      $("result-art").innerHTML = '<img class="result-img" src="' + PB.art.creatureThumb(bug.sid) + '" alt="">';
+      $("result-name").textContent = sp.name;
+      var badges = "";
+      if (info.isNew) badges += '<span class="rbadge new">NEW!</span>';
+      if (info.isRecord) badges += '<span class="rbadge rec">📏 RECORD</span>';
+      badges += '<span class="rbadge star">' + PB.rarity[sp.rarity].star + " " + PB.rarity[sp.rarity].label + "</span>";
+      $("result-badges").innerHTML = badges;
+      $("result-size").innerHTML = '<span class="size-label">' + PB.sizeLabel(bug) + '</span><span class="size-mm">' + PB.sizeOf(bug) + ' mm</span>';
+      $("result-candy").innerHTML = "+" + info.candy + " 🍬 catch bonus";
+      el.result.classList.remove("hidden");
+      PB.audio.candy();
+    },
 
     // ---- backpack ----------------------------------------------------------
     openBag: function () { renderBag(); el.bagOverlay.classList.remove("hidden"); PB.audio.open(); },
