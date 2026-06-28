@@ -34,21 +34,35 @@
      skittish (0..1) makes a wild creature faster & dodgier and the catch bar
      shrink quicker. */
   PB.species = [
-    { id: "caterpie", name: "Caterpie", dex: 10, rarity: "common", home: "forest",
+    // --- forest (hand-drawn art) ---
+    { id: "caterpie", name: "Caterpie", dex: 10, rarity: "common", home: "forest", locs: ["forest"],
       skittish: 0.15, baseSize: 28, fw: 1, fh: 1,
       blurb: "A gentle grub that nibbles leaves all morning." },
-    { id: "weedle", name: "Weedle", dex: 13, rarity: "common", home: "forest",
+    { id: "weedle", name: "Weedle", dex: 13, rarity: "common", home: "forest", locs: ["forest"],
       skittish: 0.3, baseSize: 30, fw: 2, fh: 1,
       blurb: "A hairy little grub with a sharp stinger on its head." },
-    { id: "shuckle", name: "Shuckle", dex: 213, rarity: "uncommon", home: "tree",
+    { id: "shuckle", name: "Shuckle", dex: 213, rarity: "uncommon", home: "tree", locs: ["forest"],
       skittish: 0.1, baseSize: 30, fw: 1, fh: 1,
       blurb: "Tucks into a worn shell and ferments berries into sweet juice." },
-    { id: "paras", name: "Paras", dex: 46, rarity: "rare", home: "forest",
+    { id: "paras", name: "Paras", dex: 46, rarity: "rare", home: "forest", locs: ["forest"],
       skittish: 0.45, baseSize: 34, fw: 2, fh: 2,
       blurb: "Two mushrooms ride on its back, sharing everything it finds." },
-    { id: "wimpod", name: "Wimpod", dex: 767, rarity: "epic", home: "pond",
+    { id: "wimpod", name: "Wimpod", dex: 767, rarity: "epic", home: "pond", locs: ["forest", "beach"],
       skittish: 0.85, baseSize: 46, fw: 2, fh: 2,
-      blurb: "A timid scavenger that bolts at the faintest shadow." },
+      blurb: "A timid scavenger that bolts at the faintest shadow. Loves the shoreline." },
+    // --- beach (procedural cute sprites) ---
+    { id: "corphish", name: "Corphish", dex: 341, rarity: "common", home: "pond", locs: ["beach"],
+      skittish: 0.35, baseSize: 30, fw: 2, fh: 1,
+      look: { body: "crab", c1: "#e0533f", c2: "#f0c040", c3: "#222", claws: true },
+      blurb: "A hardy little crawdad that turned up at the beach and simply moved in." },
+    { id: "dwebble", name: "Dwebble", dex: 557, rarity: "uncommon", home: "pond", locs: ["beach"],
+      skittish: 0.3, baseSize: 30, fw: 1, fh: 1,
+      look: { body: "crab", c1: "#e0a86a", c2: "#9aa0a6", c3: "#222", claws: true, shell: true },
+      blurb: "Carries a smooth stone home on its back, scooting between tide pools." },
+    { id: "anorith", name: "Anorith", dex: 347, rarity: "rare", home: "pond", locs: ["beach"],
+      skittish: 0.55, baseSize: 40, fw: 2, fh: 2,
+      look: { body: "shrimp", c1: "#7fb0d8", c2: "#2a4d6e", c3: "#222" },
+      blurb: "An ancient little swimmer, paddling the shallows with feathery fins." },
   ];
   PB.speciesById = {};
   PB.species.forEach(function (s) { PB.speciesById[s.id] = s; });
@@ -96,6 +110,9 @@
       ],
     },
   };
+
+  // A one-time shop purchase that unlocks the Beach.
+  PB.ticket = { name: "Plane Ticket", icon: "✈️", cost: 150, desc: "Fly to the sunny Beach to meet brand-new creatures!" };
 
   // Museum friends.
   PB.friends = [

@@ -1,9 +1,7 @@
 /* ===========================================================================
-   art.js — registry + loader for the hand-drawn creature art.
-   A handful of species ship with painterly art (a "creature" cut-out for the
-   wild/overworld + catch screen, and a "creature in a jar" piece for the
-   collection screens). Everything else falls back to procedural sprites, and
-   procedural creatures get a drawn glass jar so the collection stays cohesive.
+   art.js — registry/loader + drawing for creature art.
+   Species with hand-drawn files use them; the rest (beach bugs) fall back to
+   cute procedural sprites. All drawing adds a gentle squishy squash-stretch.
    =========================================================================== */
 (function (PB) {
   "use strict";
@@ -15,48 +13,59 @@
     shuckle:  { creature: "assets/creatures/shuckle.png",  jar: "assets/jars/shuckle.png" },
     wimpod:   { creature: "assets/creatures/wimpod.png",   jar: "assets/jars/wimpod.png" },
   };
-
-  var imgs = {}; // "<sid>:<kind>" -> HTMLImageElement
-
+  var imgs = {}, thumbs = {};
   function ready(im) { return im && im.complete && im.naturalWidth > 0; }
 
   PB.art = {
     preload: function () {
       Object.keys(FILES).forEach(function (sid) {
-        ["creature", "jar"].forEach(function (kind) {
-          var im = new Image();
-          im.src = FILES[sid][kind];
-          imgs[sid + ":" + kind] = im;
-        });
+        ["creature", "jar"].forEach(function (k) { var im = new Image(); im.src = FILES[sid][k]; imgs[sid + ":" + k] = im; });
       });
     },
-
     has: function (sid) { return !!FILES[sid]; },
     creatureURL: function (sid) { return FILES[sid] ? FILES[sid].creature : null; },
     jarURL: function (sid) { return FILES[sid] ? FILES[sid].jar : null; },
     creatureImg: function (sid) { var im = imgs[sid + ":creature"]; return ready(im) ? im : null; },
     jarImg: function (sid) { var im = imgs[sid + ":jar"]; return ready(im) ? im : null; },
 
-    // Draw a hand-drawn creature cut-out centred on cx with its feet at cy.
-    // Returns false if the image isn't available so the caller can fall back.
-    drawCreature: function (ctx, sid, cx, cy, h, faceLeft) {
-      var im = this.creatureImg(sid);
-      if (!im) return false;
-      var w = (im.naturalWidth / im.naturalHeight) * h;
+    // a URL usable in an <img> (real file, or a procedural data URL)
+    creatureThumb: function (sid) {
+      if (FILES[sid]) return FILES[sid].creature;
+      var k = "c:" + sid; return thumbs[k] || (thumbs[k] = PB.sprites.bugCanvas(sid, 128).toDataURL());
+    },
+    jarThumb: function (sid) {
+      if (FILES[sid]) return FILES[sid].jar;
+      var k = "j:" + sid; return thumbs[k] || (thumbs[k] = PB.sprites.jarCanvas(sid, 128).toDataURL());
+    },
+
+    // draw a creature with feet at (cx,cy), squishing as it bobs
+    drawCreature: function (ctx, sid, cx, cy, h, faceLeft, t) {
+      t = t || 0;
+      var sp = PB.speciesById[sid], im = this.creatureImg(sid);
+      var sq = 1 + Math.sin(t * 0.16) * 0.08;
       ctx.save();
-      if (faceLeft) { ctx.translate(cx, 0); ctx.scale(-1, 1); ctx.translate(-cx, 0); }
-      ctx.drawImage(im, Math.round(cx - w / 2), Math.round(cy - h), Math.round(w), Math.round(h));
+      ctx.translate(cx, cy);
+      ctx.scale((faceLeft ? -1 : 1) / sq, sq);
+      ctx.translate(-cx, -cy);
+      if (im) { var w = (im.naturalWidth / im.naturalHeight) * h; ctx.drawImage(im, Math.round(cx - w / 2), Math.round(cy - h), Math.round(w), Math.round(h)); }
+      else if (sp && sp.look) { PB.sprites.drawBug(ctx, sp.look, cx, cy - h * 0.5, h, 0); }
       ctx.restore();
       return true;
     },
 
-    // Draw a "creature in a jar" centred on cx with its base at bottomY.
-    drawJar: function (ctx, sid, cx, bottomY, h) {
+    // draw a jar with its base at bottomY, wobbling gently
+    drawJar: function (ctx, sid, cx, bottomY, h, t) {
+      t = t || 0;
+      var sq = 1 + Math.sin(t * 0.16 + 1) * 0.05;
+      ctx.save();
+      ctx.translate(cx, bottomY); ctx.scale(1 / sq, sq); ctx.translate(-cx, -bottomY);
       var im = this.jarImg(sid);
-      if (!im) return false;
-      var w = (im.naturalWidth / im.naturalHeight) * h;
-      ctx.drawImage(im, Math.round(cx - w / 2), Math.round(bottomY - h), Math.round(w), Math.round(h));
-      return w;
+      if (im) { var w = (im.naturalWidth / im.naturalHeight) * h; ctx.drawImage(im, Math.round(cx - w / 2), Math.round(bottomY - h), Math.round(w), Math.round(h)); }
+      else {
+        var cv = PB.sprites.jarCanvas(sid, 128), ar = cv.width / cv.height, w2 = ar * h;
+        ctx.drawImage(cv, Math.round(cx - w2 / 2), Math.round(bottomY - h), Math.round(w2), Math.round(h));
+      }
+      ctx.restore();
     },
   };
 

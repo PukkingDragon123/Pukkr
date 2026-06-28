@@ -21,7 +21,7 @@
       museum: { donated: {}, visitorsServed: 0, lastVisitDay: 0 },
       dex: {},
       stats: { totalCaught: 0, candyEarned: 0, daysPlayed: 1 },
-      flags: { tutorialCatch: false },
+      flags: { tutorialCatch: false, beachUnlocked: false },
       uidSeq: 1,
     };
     return PB.state;

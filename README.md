@@ -5,6 +5,8 @@ A **cozy 2D bug-collecting fan game** in a soft, hand-painted style:
 - ⛩️ **Forest** — enter through a little shrine and pick the **left or right path**.
   You'll find a bug spot (tap a fast, dodgy creature, then beat the **shrinking**
   catch bar), a candy stash, a basket of food, a pick-a-charm game, or nothing.
+- 🏖️ **Beach** — buy a **Plane Ticket** in the Shop to unlock the seaside and meet
+  brand-new creatures (Corphish, Dwebble, Anorith).
 - 🎒 **Backpack** — caught creatures take up **space by size** on a 5×5 grid; drag
   to tidy them. Upgrade the bag for more room.
 - 🌷 **Garden** — **drag food onto a jar** to grow your creature. The bigger it
@@ -13,7 +15,9 @@ A **cozy 2D bug-collecting fan game** in a soft, hand-painted style:
   friends, who leave candy.
 - 🛒 **Shop** — buy a better net, a bigger backpack, and food.
 
-Inspired by laid-back bug-park collecting games. Every creature is hand-drawn art.
+Inspired by laid-back bug-park collecting games. Everything bobs and squishes for
+a soft, bouncy feel. The five forest creatures are hand-drawn art; the beach
+creatures use cute procedural sprites until hand-drawn art is added.
 
 ## Play
 

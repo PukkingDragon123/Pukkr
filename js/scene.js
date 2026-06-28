@@ -13,6 +13,7 @@
 
   var LOC = {
     forest: { name: "Whispering Woods", emoji: "🌳" },
+    beach:  { name: "Sunny Beach",      emoji: "🏖️" },
     garden: { name: "Cozy Garden",      emoji: "🌷" },
     museum: { name: "Bug Museum",       emoji: "🏛" },
   };
@@ -215,6 +216,62 @@
     c.fillStyle = vg; c.fillRect(0, 0, W, H);
   }
 
+  // ---- Sunny Beach ---------------------------------------------------------
+  function paintBeach(c) {
+    var rnd = rng(55555);
+    // warm sky
+    vgrad(c, 0, 0, W, H * 0.55, "#bfe9ff", "#ffe9c2");
+    blob(c, W * 0.80, H * 0.18, 200, [255, 244, 200], 0.9);
+    blob(c, W * 0.80, H * 0.18, 80, [255, 252, 235], 1);
+    // soft clouds
+    [[0.2, 0.16], [0.5, 0.1], [0.62, 0.22]].forEach(function (p) {
+      blob(c, W * p[0], H * p[1], 70, [255, 255, 255], 0.85);
+      blob(c, W * p[0] + 50, H * p[1] + 6, 50, [255, 255, 255], 0.8);
+      blob(c, W * p[0] - 46, H * p[1] + 8, 44, [255, 255, 255], 0.8);
+    });
+    // sea
+    vgrad(c, 0, H * 0.42, W, H * 0.22, "#5fc7d6", "#3a9ec2");
+    c.strokeStyle = "rgba(255,255,255,0.5)"; c.lineWidth = 3;
+    for (var wv = 0; wv < 5; wv++) {
+      var wy = H * (0.46 + wv * 0.03);
+      c.beginPath();
+      for (var x = 0; x <= W; x += 20) c.lineTo(x, wy + Math.sin(x * 0.04 + wv) * 4);
+      c.stroke();
+    }
+    // wet sand + dry sand
+    vgrad(c, 0, H * 0.6, W, H * 0.12, "#e9d3a0", "#efdcae");
+    vgrad(c, 0, H * 0.7, W, H * 0.3, "#f6e6bf", "#ecd49f");
+    c.fillStyle = "rgba(255,255,255,0.35)";
+    c.beginPath(); c.ellipse(W * 0.5, H * 0.63, W * 0.55, 14, 0, 0, Math.PI * 2); c.fill(); // foam line
+    // sand dapples + shells + starfish
+    for (var i = 0; i < 40; i++) blob(c, rnd() * W, H * (0.74 + rnd() * 0.24), 18 + rnd() * 28, [210, 180, 120], 0.12);
+    for (var sh = 0; sh < 8; sh++) {
+      var sx = rnd() * W, sy = H * (0.76 + rnd() * 0.2);
+      if (rnd() < 0.5) { c.fillStyle = "#f4b8c4"; c.beginPath(); c.arc(sx, sy, 7, Math.PI, 0); c.fill(); c.strokeStyle = "rgba(180,120,130,0.6)"; c.lineWidth = 1.5; c.stroke(); }
+      else { c.fillStyle = "#f6b65e"; star(c, sx, sy, 8); }
+    }
+    // a palm tree (left)
+    var px = W * 0.1, py = H * 0.74;
+    c.strokeStyle = "#9c7747"; c.lineWidth = 14; c.lineCap = "round";
+    c.beginPath(); c.moveTo(px, py); c.quadraticCurveTo(px - 30, py - 110, px + 10, py - 200); c.stroke();
+    [-1, -0.4, 0.3, 1].forEach(function (a) {
+      blob(c, px + 10 + a * 60, py - 200 - Math.abs(a) * 6, 46, [110, 180, 90], 0.95);
+    });
+    // foreground sandy framing
+    blob(c, W * 0.03, H * 1.05, 240, [220, 190, 130], 0.6);
+    blob(c, W * 1.0, H * 1.04, 250, [220, 190, 130], 0.6);
+  }
+  function star(c, x, y, r) {
+    c.beginPath();
+    for (var i = 0; i < 5; i++) {
+      var a = -Math.PI / 2 + i * 2 * Math.PI / 5;
+      c.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r);
+      var a2 = a + Math.PI / 5;
+      c.lineTo(x + Math.cos(a2) * r * 0.45, y + Math.sin(a2) * r * 0.45);
+    }
+    c.closePath(); c.fill();
+  }
+
   function prerender(id, painter) {
     var cv = document.createElement("canvas"); cv.width = W; cv.height = H;
     painter(cv.getContext("2d")); pre[id] = cv;
@@ -235,6 +292,7 @@
   PB.scene = {
     init: function () {
       prerender("forest", paintForest);
+      prerender("beach", paintBeach);
       prerender("garden", paintGarden);
       prerender("museum", paintMuseum);
     },
@@ -244,7 +302,7 @@
     setLocation: function (id) {
       if (!LOC[id] || id === current) return false;
       current = id;
-      if (id === "forest") PB.spawns.reset();
+      if (id === "forest" || id === "beach") PB.spawns.reset();
       return true;
     },
     bounds: function () { return { x0: 80, x1: W - 80, y0: H * 0.40, y1: H * 0.82 }; },

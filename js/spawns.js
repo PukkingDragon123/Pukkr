@@ -8,8 +8,13 @@
   var entities = [];
   var rand = Math.random;
 
+  function pool() {
+    var loc = PB.scene.current();
+    return PB.species.filter(function (s) { return (s.locs || ["forest"]).indexOf(loc) >= 0; });
+  }
   function weightedPick() {
-    var list = PB.species, boost = PB.forest.rareBoost, total = 0, i, w;
+    var list = pool(), boost = PB.forest.rareBoost, total = 0, i, w;
+    if (!list.length) return null;
     var weights = list.map(function (s) {
       w = PB.rarity[s.rarity].weight;
       if (boost && (s.rarity === "rare" || s.rarity === "epic")) w *= 5;
@@ -22,6 +27,7 @@
 
   function spawnOne() {
     var sp = weightedPick();
+    if (!sp) return;
     var b = PB.scene.bounds();
     var y = b.y0 + rand() * (b.y1 - b.y0);
     entities.push({
@@ -44,7 +50,9 @@
     list: function () { return entities; },
 
     update: function (dt) {
-      if (PB.scene.current() !== "forest" || PB.forest.view !== "spot") { entities = []; return; }
+      var loc = PB.scene.current();
+      var catching = (loc === "forest" && PB.forest.view === "spot") || loc === "beach";
+      if (!catching) { entities = []; return; }
       var b = PB.scene.bounds();
       for (var i = entities.length - 1; i >= 0; i--) {
         var e = entities[i];
@@ -72,7 +80,7 @@
         ctx.globalAlpha = Math.max(0, Math.min(1, e.alpha));
         ctx.fillStyle = "rgba(40,40,30,0.18)";
         ctx.beginPath(); ctx.ellipse(e.x, e.baseY + 40, 30, 9, 0, 0, Math.PI * 2); ctx.fill();
-        PB.art.drawCreature(ctx, e.sid, e.x, e.y + 44, 96, e.face < 0); // art-only
+        PB.art.drawCreature(ctx, e.sid, e.x, e.y + 44, 96, e.face < 0, e.t); // squishy bob
         ctx.restore();
       }
     },

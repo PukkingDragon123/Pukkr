@@ -29,7 +29,9 @@
     var nav = $("navbar").querySelectorAll("[data-nav]");
     for (var i = 0; i < nav.length; i++) nav[i].addEventListener("click", function () {
       PB.audio.resume(); var n = this.getAttribute("data-nav");
-      if (n === "shop") PB.ui.openShop(); else setScene(n);
+      if (n === "shop") { PB.ui.openShop(); return; }
+      if (n === "beach" && !PB.state.flags.beachUnlocked) { PB.ui.toast("✈️ Buy a Plane Ticket in the Shop to visit the Beach!", ""); return; }
+      setScene(n);
     });
     var paths = $("forest-paths").querySelectorAll("[data-side]");
     for (var j = 0; j < paths.length; j++) paths[j].addEventListener("click", function () { choosePath(this.getAttribute("data-side")); });
@@ -140,10 +142,12 @@
     return -1;
   }
 
+  function isCatchScene() { var h = PB.scene.current(); return (h === "forest" && PB.forest.view === "spot") || h === "beach"; }
+
   function onCanvasClick(ev) {
     if (blocked()) return;
     var p = toCanvas(ev.clientX, ev.clientY), here = PB.scene.current();
-    if (here === "forest" && PB.forest.view === "spot") {
+    if (isCatchScene()) {
       var e = PB.spawns.hitTest(p.x, p.y);
       if (e) { if (PB.bag.hasRoomFor(e.sid)) PB.catching.begin(e); else PB.ui.toast("Your backpack is full! Make room first. 🎒", ""); }
     } else if (here === "garden") {
@@ -166,7 +170,7 @@
   };
 
   function interact() {
-    if (blocked() || PB.scene.current() !== "forest" || PB.forest.view !== "spot") return;
+    if (blocked() || !isCatchScene()) return;
     var list = PB.spawns.list().filter(function (e) { return e.state !== "out"; });
     if (!list.length) return;
     var cx = VIEW_W / 2, cy = VIEW_H * 0.6, best = null, bd = Infinity;
@@ -195,6 +199,9 @@
     else if (here === "forest" && PB.forest.view === "spot") {
       PB.spawns.update(dt);
       PB.ui.setPrompt("Tap the moving creature to catch it! (it's quick!) 🪤");
+    } else if (here === "beach") {
+      PB.spawns.update(dt);
+      PB.ui.setPrompt("Tap a beach creature to catch it! 🏖️");
     } else if (here === "forest") {
       PB.ui.setPrompt("Pick a path to explore. ⛩️");
     } else if (here === "garden") {
@@ -214,7 +221,7 @@
     ctx.clearRect(0, 0, VIEW_W, VIEW_H);
     PB.scene.draw(ctx);
     var here = PB.scene.current();
-    if (here === "forest" && PB.forest.view === "spot") PB.spawns.draw(ctx);
+    if (isCatchScene()) PB.spawns.draw(ctx);
     else if (here === "garden") drawGardenJars();
     else if (here === "museum") drawMuseumJars();
 
@@ -230,7 +237,7 @@
       var s = gardenLayout[i], b = bugs[i], bob = Math.sin(clock * 2 + i) * 2;
       ctx.fillStyle = "rgba(40,40,30,0.16)";
       ctx.beginPath(); ctx.ellipse(s.x, s.y + 2, 34, 9, 0, 0, Math.PI * 2); ctx.fill();
-      PB.art.drawJar(ctx, b.sid, s.x, s.y - bob, s.h);
+      PB.art.drawJar(ctx, b.sid, s.x, s.y - bob, s.h, clock + i);
       // grow bar
       var bw = 46, bx = s.x - bw / 2, by = s.y + 8;
       ctx.fillStyle = "rgba(0,0,0,0.2)"; ctx.fillRect(bx, by, bw, 6);
@@ -245,7 +252,7 @@
     for (var i = 0; i < slots.length && i < sids.length; i++) {
       var s = slots[i];
       ctx.fillStyle = "rgba(40,30,20,0.18)"; ctx.beginPath(); ctx.ellipse(s.x, s.y + 2, 28, 7, 0, 0, Math.PI * 2); ctx.fill();
-      PB.art.drawJar(ctx, sids[i], s.x, s.y, s.h);
+      PB.art.drawJar(ctx, sids[i], s.x, s.y, s.h, clock * 0.5 + i);
       museumLayout.push({ x: s.x, y: s.y, h: s.h, sid: sids[i] });
     }
   }

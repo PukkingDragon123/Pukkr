@@ -11,7 +11,7 @@
   function $(id) { return document.getElementById(id); }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) {
     return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]; }); }
-  function jarImg(sid) { return '<img src="' + PB.art.jarURL(sid) + '" alt="">'; }
+  function jarImg(sid) { return '<img src="' + PB.art.jarThumb(sid) + '" alt="">'; }
 
   // generic pointer-drag with a floating ghost; onDrop(clientX, clientY)
   function dragGhost(startEv, html, onDrop) {
@@ -87,7 +87,7 @@
     // ---- catch overlay -----------------------------------------------------
     openCatch: function (sp, zs, zw) {
       el.catchTitle.textContent = "A wild " + sp.name + "!";
-      el.catchBug.innerHTML = '<img class="catch-art" src="' + PB.art.creatureURL(sp.id) + '" alt="">';
+      el.catchBug.innerHTML = '<img class="catch-art" src="' + PB.art.creatureThumb(sp.id) + '" alt="">';
       this.setCatchZone(zs, zw); this.setCatchMarker(0);
       el.catchAttempts.textContent = PB.rarity[sp.rarity].star + " " + PB.rarity[sp.rarity].label;
       el.catchOverlay.classList.remove("hidden");
@@ -181,6 +181,14 @@
   // ---- shop ----------------------------------------------------------------
   function renderShop() {
     var head = '<div class="section-note">You have <b>' + PB.state.candy + " 🍬</b>. Spend it on better gear and food.</div>";
+    var ticket;
+    if (PB.state.flags.beachUnlocked) {
+      ticket = row(PB.ticket.icon, PB.ticket.name + " — Beach unlocked ✓", "The Beach is open! Visit it from the bottom bar. 🏖️",
+        '<button class="btn-small" disabled>Owned</button>');
+    } else {
+      ticket = row(PB.ticket.icon, PB.ticket.name, PB.ticket.desc + "<br>Cost: <b>" + PB.ticket.cost + " 🍬</b>",
+        '<button class="btn-small honey" data-ticket="1"' + (PB.state.candy >= PB.ticket.cost ? "" : " disabled") + ">Buy</button>");
+    }
     var gear = ["net", "bag"].map(function (key) {
       var u = PB.upgrades[key], cur = (key === "net" ? PB.netTier() : PB.bagTier());
       var nt = PB.shop.nextTier(key), action, line;
@@ -196,12 +204,16 @@
         '<button class="btn-small honey" data-food="' + f.id + ':1"' + (PB.state.candy >= f.cost ? "" : " disabled") + '>×1</button> ' +
         '<button class="btn-small honey" data-food="' + f.id + ':5"' + (PB.state.candy >= f.cost * 5 ? "" : " disabled") + '>×5</button>');
     }).join("");
-    el.shopBody.innerHTML = head + gear + food;
+    el.shopBody.innerHTML = head + ticket + gear + food;
   }
   function onShopClick(e) {
-    var b = e.target.closest && e.target.closest("[data-buy],[data-food]");
+    var b = e.target.closest && e.target.closest("[data-buy],[data-food],[data-ticket]");
     if (!b) return;
-    if (b.hasAttribute("data-buy")) {
+    if (b.hasAttribute("data-ticket")) {
+      var rt = PB.shop.buyTicket();
+      if (rt.ok) PB.ui.toast("✈️ Plane ticket bought! The Beach is now open. 🏖️", "good");
+      else if (rt.reason === "poor") PB.ui.toast("Not enough candy yet.", "");
+    } else if (b.hasAttribute("data-buy")) {
       var r = PB.shop.buy(b.getAttribute("data-buy"));
       if (r.ok) PB.ui.toast("Bought " + r.tier.name + "! 🎉", "good");
       else if (r.reason === "poor") PB.ui.toast("Not enough candy yet.", "");

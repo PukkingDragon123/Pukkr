@@ -18,6 +18,13 @@
       PB.audio.candy();
       return { ok: true, tier: nt };
     },
+    buyTicket: function () {
+      if (PB.state.flags.beachUnlocked) return { ok: false, reason: "owned" };
+      if (!PB.spendCandy(PB.ticket.cost)) return { ok: false, reason: "poor" };
+      PB.state.flags.beachUnlocked = true;
+      PB.audio.candy();
+      return { ok: true };
+    },
     buyFood: function (id, qty) {
       qty = qty || 1;
       var f = PB.feeds.filter(function (x) { return x.id === id; })[0];
