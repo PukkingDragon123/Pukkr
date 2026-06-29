@@ -90,22 +90,6 @@ html, body {
 }
 .hud-icon { font-size: 16px; }
 
-/* ---- Location label ------------------------------------------------------ */
-.loc-label {
-  position: absolute;
-  top: 14px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--paper);
-  border: 3px solid var(--border);
-  border-radius: 999px;
-  padding: 5px 18px;
-  font-weight: 800;
-  font-size: 15px;
-  box-shadow: 0 3px 0 var(--shadow);
-  white-space: nowrap;
-}
-
 /* ---- Contextual prompt --------------------------------------------------- */
 .prompt {
   position: absolute;
@@ -264,23 +248,6 @@ html, body {
   box-shadow: 0 3px 0 var(--shadow);
 }
 .panel-close:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--shadow); }
-.panel-tabs {
-  display: flex;
-  gap: 6px;
-  padding: 10px 14px 0;
-  flex-wrap: wrap;
-}
-.panel-tab {
-  border: 3px solid var(--border);
-  background: var(--cream);
-  border-radius: 10px 10px 0 0;
-  padding: 6px 14px;
-  font-weight: 700;
-  font-size: 14px;
-  cursor: pointer;
-  opacity: 0.7;
-}
-.panel-tab.active { opacity: 1; background: var(--paper); transform: translateY(2px); }
 .panel-body {
   flex: 1;
   overflow-y: auto;
@@ -462,127 +429,12 @@ button:disabled { opacity: 0.45; cursor: not-allowed; filter: grayscale(0.5); }
 .navbar button.active small { color: var(--ink); }
 .navbar button:active { transform: translateY(2px); }
 
-/* ---- Museum bar ---------------------------------------------------------- */
-.museum-bar {
-  position: absolute;
-  left: 50%;
-  bottom: 168px;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: rgba(255, 250, 240, 0.94);
-  border: 3px solid var(--border);
-  border-radius: 16px;
-  padding: 8px 12px 8px 16px;
-  box-shadow: 0 5px 0 var(--shadow);
-  max-width: 92vw;
-}
-.museum-bar .mb-info { font-size: 14px; font-weight: 700; color: var(--ink); }
-
-/* ---- Feed card (Garden) -------------------------------------------------- */
-.feed-box {
-  position: relative;
-  background: var(--panel-bg);
-  border: 4px solid var(--border);
-  border-radius: 18px;
-  padding: 18px 22px 20px;
-  width: min(380px, 88vw);
-  box-shadow: 0 10px 0 var(--shadow);
-  text-align: center;
-}
-.feed-art { height: 150px; display: flex; align-items: center; justify-content: center; margin-bottom: 6px; }
-.feed-art img { max-height: 150px; max-width: 130px; object-fit: contain; filter: drop-shadow(0 5px 5px rgba(74,63,53,0.22)); }
-.feed-name { font-size: 20px; font-weight: 800; }
-.feed-sub { font-size: 13px; color: var(--ink-soft); margin-bottom: 8px; }
-.feed-feeds { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; margin: 12px 0; }
-.feed-actions { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
-
 /* ---- HUD clickable pill -------------------------------------------------- */
 .hud-btn { cursor: pointer; font-family: inherit; }
 .hud-btn:active { transform: translateY(2px); }
 
-/* ---- Forest shrine paths ------------------------------------------------- */
-.forest-paths {
-  position: absolute; left: 50%; top: 52%;
-  transform: translate(-50%, -50%);
-  display: flex; gap: 40px;
-}
-.path-btn {
-  border: 4px solid var(--border);
-  background: rgba(255, 250, 240, 0.92);
-  border-radius: 18px;
-  padding: 20px 30px;
-  font-size: 17px; font-weight: 800; color: var(--ink);
-  cursor: pointer; line-height: 1.6; text-align: center;
-  box-shadow: 0 6px 0 var(--shadow);
-}
-.path-btn:first-child { font-size: 30px; }
-.path-btn { font-size: 28px; }
-.path-btn:hover { background: var(--cream); }
-.path-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 var(--shadow); }
-.spot-leave { position: absolute; left: 16px; top: 60px; }
-
-/* ---- Garden food tray ---------------------------------------------------- */
-.garden-tray {
-  position: absolute; left: 50%; bottom: 104px;
-  transform: translateX(-50%);
-  display: flex; align-items: center; gap: 14px;
-  background: rgba(255, 250, 240, 0.94);
-  border: 3px solid var(--border); border-radius: 18px;
-  padding: 8px 14px; box-shadow: 0 5px 0 var(--shadow); max-width: 94vw;
-}
-.tray-foods { display: flex; gap: 8px; }
-.food-chip {
-  position: relative; width: 50px; height: 50px;
-  border: 3px solid var(--border); border-radius: 12px;
-  background: var(--cream); display: flex; align-items: center; justify-content: center;
-  cursor: grab; touch-action: none; box-shadow: 0 2px 0 var(--shadow);
-}
-.food-chip.empty { opacity: 0.45; }
-.food-chip .food-icon { font-size: 26px; }
-.food-chip .food-n {
-  position: absolute; bottom: -6px; right: -6px;
-  background: var(--leaf-dk); color: #fff; border: 2px solid var(--border);
-  border-radius: 999px; font-size: 11px; font-weight: 800; padding: 0 6px;
-}
-.food-chip.big { width: 56px; height: 56px; }
-.drag-ghost { position: fixed; transform: translate(-50%, -50%); pointer-events: none; z-index: 100; }
-.drag-ghost .food-chip { background: var(--honey); }
-
-/* ---- Backpack grid ------------------------------------------------------- */
+/* ---- Compact panel window (Goals) ---------------------------------------- */
 .panel-window.small { width: min(440px, 92vw); height: auto; max-height: 90vh; }
-.bag-grid { position: relative; margin: 8px auto; }
-.bag-cell { position: absolute; background: var(--cream); border: 2px dashed rgba(74,63,53,0.3); border-radius: 8px; }
-.bag-tile {
-  position: absolute; margin: 2px;
-  border: 3px solid var(--border); border-radius: 12px;
-  background: rgba(207,234,238,0.5);
-  display: flex; align-items: center; justify-content: center;
-  cursor: grab; touch-action: none; overflow: hidden;
-  box-shadow: 0 2px 0 var(--shadow);
-}
-.bag-tile img { max-width: 90%; max-height: 96%; object-fit: contain; pointer-events: none; }
-.bag-actions { text-align: center; }
-
-/* ---- Creature popup hint ------------------------------------------------- */
-.feed-hint { font-size: 12px; color: var(--ink-soft); margin-top: 10px; }
-
-/* ---- Shrine card game ---------------------------------------------------- */
-.card-box {
-  background: var(--panel-bg); border: 4px solid var(--border); border-radius: 18px;
-  padding: 22px 26px; width: min(440px, 90vw); text-align: center; box-shadow: 0 10px 0 var(--shadow);
-}
-.card-title { font-size: 20px; font-weight: 800; margin-bottom: 14px; }
-.card-row { display: flex; gap: 14px; justify-content: center; }
-.charm-card {
-  width: 92px; height: 124px; border: 4px solid var(--border); border-radius: 14px;
-  background: linear-gradient(160deg, #b39ddb, #7a6cc4); color: #fff;
-  font-size: 40px; cursor: pointer; box-shadow: 0 5px 0 var(--shadow);
-}
-.charm-card:disabled { cursor: default; }
-.charm-card:not(:disabled):hover { transform: translateY(-3px); }
-.card-result { margin-top: 14px; font-size: 15px; font-weight: 700; min-height: 22px; }
 
 /* ---- Squishy / bouncy juice --------------------------------------------- */
 @keyframes pop-in {
@@ -709,8 +561,121 @@ button:disabled { opacity: 0.45; cursor: not-allowed; filter: grayscale(0.5); }
 @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
 .rbadge.tal { background: #e6a3d0; }
 
+/* ===========================================================================
+   Idle / gacha RPG additions
+   =========================================================================== */
+
+/* constrain creature art in any card-art container (capsule reveals, lab pedestals) */
+.card-art img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+/* ---- HUD extras ---------------------------------------------------------- */
+.hud-pill.glim { border-color: var(--honey-dk); }
+#goals-pill { gap: 4px; position: relative; }
+.goals-badge { background: var(--berry); color: #fff; border: 2px solid var(--border); border-radius: 999px; font-size: 10px; font-weight: 800; padding: 0 5px; margin-left: 2px; }
+
+/* ---- Multi-lure bait bar ------------------------------------------------- */
+.bait-bar { flex-direction: column; align-items: stretch; }
+.lure-slot { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: center; width: 100%; }
+.lure-slot + .lure-slot { margin-top: 6px; border-top: 2px dashed rgba(74,63,53,.18); padding-top: 6px; }
+.lure-ic { font-size: 20px; }
+.lure-ready { font-weight: 800; font-size: 14px; color: var(--leaf-dk); }
+.btn-tiny { border: 3px solid var(--border); background: var(--honey); border-radius: 10px; padding: 5px 8px; font-weight: 800; font-size: 12px; cursor: pointer; box-shadow: 0 2px 0 var(--shadow); }
+.btn-tiny:active { transform: translateY(2px); box-shadow: 0 0 0 var(--shadow); }
+
+/* ---- Combat bar (combo / abilities / SWARM) ------------------------------ */
+.combat-bar { position: absolute; left: 50%; bottom: 86px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; max-width: 96vw; pointer-events: none; }
+.combat-bar > * { pointer-events: auto; }
+.combo-tag { background: var(--ink); color: #ffe08a; border: 3px solid var(--border); border-radius: 999px; padding: 4px 14px; font-weight: 900; font-size: 18px; box-shadow: 0 3px 0 var(--shadow); }
+.combo-tag.pulse { animation: combo-pop .18s cubic-bezier(.34,1.56,.64,1); }
+@keyframes combo-pop { 0% { transform: scale(1); } 50% { transform: scale(1.28); } 100% { transform: scale(1); } }
+.combat-controls { display: flex; align-items: stretch; gap: 8px; background: rgba(255,250,240,.9); border: 3px solid var(--border); border-radius: 18px; padding: 6px; box-shadow: 0 5px 0 var(--shadow); }
+.ability-row { display: flex; gap: 6px; }
+.ability { position: relative; overflow: hidden; width: 66px; height: 60px; border: 3px solid var(--border); border-radius: 14px; background: var(--cream); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 3px 0 var(--shadow); }
+.ability .ab-ic { font-size: 24px; line-height: 1; }
+.ability .ab-name { font-size: 10px; font-weight: 800; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .3px; }
+.ability .ab-veil { position: absolute; left: 0; right: 0; bottom: 0; height: 0%; background: rgba(40,34,26,.5); pointer-events: none; transition: height .1s linear; }
+.ability.cooling { filter: grayscale(.45); }
+.ability:not(.cooling):hover { background: var(--honey); }
+.ability:not(.cooling):active { transform: translateY(2px); box-shadow: 0 1px 0 var(--shadow); }
+.ab-empty { font-weight: 800; color: var(--ink-soft); align-self: center; padding: 0 14px; font-size: 13px; }
+.ult-btn { position: relative; overflow: hidden; width: 124px; border: 3px solid var(--border); border-radius: 14px; background: #d8c2e2; color: var(--ink); font-weight: 900; font-size: 14px; cursor: pointer; box-shadow: 0 3px 0 var(--shadow); }
+.ult-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0%; background: linear-gradient(90deg, #b06fd6, #f0a93a); transition: width .1s linear; }
+.ult-label { position: relative; z-index: 1; }
+.ult-btn.ready { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.45); animation: ult-glow .8s ease-in-out infinite; }
+.ult-btn:not(.ready) { filter: saturate(.7); }
+.ult-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--shadow); }
+@keyframes ult-glow { 0%,100% { box-shadow: 0 3px 0 var(--shadow), 0 0 0 0 rgba(240,169,58,.7); } 50% { box-shadow: 0 3px 0 var(--shadow), 0 0 14px 5px rgba(240,169,58,.9); } }
+
+/* ---- Card rarity chip + reroll ------------------------------------------- */
+.rar { position: absolute; top: -8px; left: 50%; transform: translateX(-50%); border: 2px solid var(--border); border-radius: 999px; font-size: 9px; font-weight: 800; padding: 1px 6px; color: #3a2f25; white-space: nowrap; }
+.card-reroll { position: absolute; bottom: 4px; left: 4px; width: 20px; height: 20px; border-radius: 999px; border: 2px solid var(--border); background: var(--paper); font-size: 11px; cursor: pointer; line-height: 1; padding: 0; box-shadow: 0 1px 0 var(--shadow); }
+.card-reroll:active { transform: translateY(1px); }
+.bug-card .card-sub { padding: 0 18px; }   /* clear the corner reroll/release buttons */
+.rbadge.grade { color: #fff; }
+.rbadge.grade.perfect { background: var(--honey-dk); }
+.rbadge.grade.great { background: var(--leaf-dk); }
+.rbadge.grade.good { background: var(--ink-soft); }
+
+/* ---- Capsule machine ----------------------------------------------------- */
+.cap-stage { min-height: 196px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+.cap-machine { font-size: 92px; animation: floaty 2s ease-in-out infinite; }
+.cap-tip { color: var(--ink-soft); font-size: 14px; text-align: center; max-width: 320px; }
+.cap-pity { text-align: center; font-weight: 700; font-size: 13px; margin: 10px 0 2px; }
+.cap-odds { text-align: center; font-size: 12px; color: var(--ink-soft); margin-bottom: 14px; }
+.cap-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.cap-pop { animation: cap-burst .45s cubic-bezier(.34,1.56,.64,1); }
+@keyframes cap-burst { 0% { transform: scale(0) rotate(-20deg); } 70% { transform: scale(1.15) rotate(5deg); } 100% { transform: scale(1) rotate(0); } }
+.cap-strip { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.cap-reveal { position: relative; width: 120px; border: 4px solid var(--border); border-radius: 14px; background: var(--cream); padding: 8px; text-align: center; box-shadow: 0 4px 0 var(--shadow); animation: pop-in .35s cubic-bezier(.34,1.56,.64,1); }
+.cap-reveal.mini { width: 84px; padding: 5px; }
+.cap-reveal.epic, .cap-reveal.rare { background: linear-gradient(160deg, #fff7da, #ffe7f3); }
+.cap-reveal.epic { animation: pop-in .35s cubic-bezier(.34,1.56,.64,1), ult-glow 1s ease-in-out infinite .35s; }
+.cap-reveal .card-art { width: auto; height: 64px; margin: 0 auto 4px; }
+.cap-reveal.mini .card-art { height: 44px; }
+.cap-reveal .card-name { font-weight: 800; font-size: 12px; }
+.cap-reveal.mini .card-name { font-size: 10px; }
+.cap-new { position: absolute; top: -8px; left: -6px; background: var(--leaf); border: 2px solid var(--border); border-radius: 999px; font-size: 9px; font-weight: 800; padding: 1px 5px; }
+.cap-rar { font-weight: 900; font-size: 13px; }
+
+/* ---- Shop (upgrades) ----------------------------------------------------- */
+.shop-card { display: flex; flex-direction: column; align-items: center; }
+.shop-ic { font-size: 32px; line-height: 1.1; }
+.shop-lv { font-size: 11px; font-weight: 800; color: var(--ink-soft); }
+.shop-eff { font-size: 11px; font-weight: 700; color: var(--leaf-dk); margin: 4px 0 6px; min-height: 14px; }
+.shop-card .btn-small { width: 100%; margin-top: auto; }
+.btn-small.poor { filter: grayscale(.5); opacity: .75; }
+
+/* ---- Goals (quests) ------------------------------------------------------ */
+.quest { background: var(--cream); border: 3px solid var(--border); border-radius: 14px; padding: 10px 12px; margin-bottom: 10px; box-shadow: 0 3px 0 var(--shadow); }
+.quest.done { border-color: var(--leaf-dk); background: linear-gradient(160deg, #f0fbe6, #fffaf0); }
+.quest-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.quest-text { font-weight: 800; font-size: 14px; }
+.quest-rw { font-weight: 800; font-size: 13px; color: var(--honey-dk); white-space: nowrap; }
+.quest-bar { height: 10px; background: #e9dcbd; border: 2px solid var(--border); border-radius: 999px; overflow: hidden; margin: 7px 0; }
+.quest-bar > span { display: block; height: 100%; background: var(--leaf); border-radius: 999px; transition: width .3s; }
+.quest-foot { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 700; color: var(--ink-soft); }
+
+/* ---- Lab station --------------------------------------------------------- */
+.lab-station { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; background: linear-gradient(160deg, #f3ecff, #fffaf0); border: 3px solid var(--border); border-radius: 16px; padding: 12px; margin-bottom: 8px; box-shadow: 0 3px 0 var(--shadow); }
+.lab-ped { width: 96px; min-height: 110px; border: 3px solid var(--border); border-radius: 14px; background: var(--cream); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px; text-align: center; }
+.lab-ped.empty { color: var(--ink-soft); font-weight: 700; font-size: 12px; border-style: dashed; }
+.lab-ped.result { background: linear-gradient(160deg, #fff7da, #ffe7f3); }
+.lab-ped.result.ghost { font-size: 42px; color: var(--ink-soft); }
+.lab-ped[data-clearslot] { cursor: pointer; }
+.lab-ped .card-art { width: 64px; height: 64px; margin: 0 auto 2px; }
+.lab-ped .card-name { font-weight: 800; font-size: 12px; }
+.lab-ped .card-sub { font-size: 10px; color: var(--ink-soft); }
+.lab-op { font-size: 26px; font-weight: 900; color: var(--ink-soft); }
+.lab-go { padding: 12px 18px !important; font-size: 15px !important; }
+.lab-go:disabled { opacity: .5; }
+
 /* ---- Responsiveness ------------------------------------------------------ */
 @media (max-width: 640px) {
   .hud-pill { font-size: 12px; padding: 4px 10px 4px 6px; }
   .panel-header { font-size: 17px; }
+  .ability { width: 58px; height: 56px; }
+  .ult-btn { width: 104px; font-size: 12px; }
+  .combat-controls { padding: 5px; gap: 6px; }
+  .navbar button { min-width: 52px; padding: 6px 8px; }
+  .navbar button .nav-em { font-size: 22px; }
 }

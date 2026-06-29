@@ -1,6 +1,6 @@
 /* ===========================================================================
-   main.js — boot, title, loop, two play modes (Catch & Battle), navigation,
-   idle updates, and the combat render with squishy VFX.
+   main.js — boot, title, loop, play modes (Catch & Battle), navigation, idle
+   updates, and the squishy combat render (combo, abilities, SWARM, modifiers).
    =========================================================================== */
 (function (PB) {
   "use strict";
@@ -11,7 +11,8 @@
   var last = 0, autosaveT = 0, clock = 0;
   var titleBugsAdded = false;
   var parX = 0, parY = 0;
-  var dmgPops = [], sparks = [], shake = 0;
+  var dmgPops = [], sparks = [], rings = [], shake = 0, hitStop = 0;
+  var catchSpots = [];
 
   function $(id) { return document.getElementById(id); }
 
@@ -28,8 +29,7 @@
     $("btn-help-close").addEventListener("click", closeHelp);
     var nav = $("navbar").querySelectorAll("[data-nav]");
     for (var i = 0; i < nav.length; i++) nav[i].addEventListener("click", function () {
-      PB.audio.resume(); var n = this.getAttribute("data-nav");
-      if (n === "bugs") PB.ui.openBugs(); else if (n === "lab") PB.ui.openLab(); else setMode(n);
+      PB.audio.resume(); PB.main.nav(this.getAttribute("data-nav"));
     });
     $("area-prev").addEventListener("click", function () { switchArea(-1); });
     $("area-next").addEventListener("click", function () { switchArea(1); });
@@ -42,7 +42,7 @@
 
   function showTitle() {
     mode = "title"; $("title").classList.remove("hidden"); PB.ui.showHUD(false);
-    ["navbar", "area-bar", "bait-bar"].forEach(function (id) { $(id).classList.add("hidden"); });
+    ["navbar", "area-bar", "bait-bar", "combat-bar"].forEach(function (id) { $(id).classList.add("hidden"); });
     var has = PB.save.exists(); $("btn-play").textContent = has ? "New Game" : "Play";
     var c = $("btn-continue"); c.style.display = has ? "" : "none"; c.disabled = !has;
     addTitleBugs();
@@ -64,6 +64,14 @@
     PB.ui.updateHUD();
     last = 0; autosaveT = 0;
     PB.ui.toast(isNew ? "Welcome! Set fruit bait to lure your first bug. 🎣" : "Welcome back! 🐛", "good");
+    // offline + daily rewards
+    var off = PB.state._offline;
+    if (off && off.tokens > 0) setTimeout(function () { PB.ui.toast("While you were away: +" + off.tokens + " 🎟️ from idle battles!", "candy"); }, 700);
+    var dew = PB.grantDailyDew();
+    if (dew) setTimeout(function () { PB.ui.toast("🌅 Daily Dew: +" + dew + " ✨ Glimmer! Try the Capsule machine.", "candy"); PB.ui.updateHUD(); }, isNew ? 1400 : 1300);
+    PB.state._offline = null;
+    // persist now so the offline/daily bonuses can't be re-farmed by reloading
+    PB.touchSave(); PB.save.write(PB.state);
   }
   function showHelp() { helpVisible = true; $("help").classList.remove("hidden"); }
   function closeHelp() { helpVisible = false; $("help").classList.add("hidden"); }
@@ -72,7 +80,6 @@
   function setMode(m) {
     flashScreen();
     mode = m; PB.scene.setLocation(m);
-    PB.ui.showBaitBar(m === "catch");
     if (m === "battle") PB.combat.reset();
     updateNav(); PB.ui.updateHUD();
   }
@@ -83,7 +90,7 @@
     if (i >= PB.state.unlocked) { PB.ui.toast("🔒 Beat the boss to unlock " + PB.areas[i].name + "!", ""); return; }
     PB.state.area = i; flashScreen();
     if (mode === "battle") PB.combat.reset();
-    PB.ui.updateHUD();
+    PB.ui.refreshBait(); PB.ui.updateHUD();
   }
 
   PB.main = {
@@ -92,27 +99,71 @@
     openHelp: showHelp, closeHelp: closeHelp,
     playFromTitle: function () { if (PB.save.exists()) continueGame(); else newGameStart(); },
     startCatch: startCatch, interact: interact,
-    nav: function (n) { PB.audio.resume(); if (n === "bugs") PB.ui.openBugs(); else if (n === "lab") PB.ui.openLab(); else setMode(n); },
+    useAbility: useAbility, fireUlt: fireUlt, labBurst: function () { flashScreen(); },
+    mode: function () { return mode; },
+    nav: function (n) {
+      PB.audio.resume();
+      if (n === "bugs") PB.ui.openBugs();
+      else if (n === "lab") PB.ui.openLab();
+      else if (n === "capsule") PB.ui.openCapsule();
+      else if (n === "shop") PB.ui.openShop();
+      else setMode(n);
+    },
   };
 
   function blocked() { return mode === "title" || PB.catching.isActive() || PB.ui.isBlocking() || helpVisible; }
-  function startCatch() { if (PB.bait.ready() && !PB.catching.isActive()) PB.catching.begin(PB.state.pending); }
+
+  function startCatch(slot) {
+    if (PB.catching.isActive()) return;
+    if (typeof slot !== "number") slot = PB.bait.firstReady();
+    if (slot >= 0 && PB.bait.isReady(slot)) PB.catching.begin(slot);
+  }
   function interact() {
     if (blocked()) return;
     if (mode === "catch") startCatch();
     else if (mode === "battle") doAttack();
   }
+
+  function burst(x, y, n, crit) { for (var i = 0; i < n; i++) sparks.push({ x: x, y: y, vx: (Math.random() - 0.5) * 280, vy: (Math.random() - 0.7) * 300, t: 0.5 + Math.random() * 0.2, crit: crit }); }
+
   function doAttack() {
-    var r = PB.combat.click(), e = PB.combat.enemy;
-    var ex = VIEW_W / 2, ey = VIEW_H * 0.38;
+    var r = PB.combat.click(), ex = VIEW_W / 2, ey = VIEW_H * 0.34;
     dmgPops.push({ x: ex + (Math.random() - 0.5) * 90, y: ey, t: 0.8, dmg: r.dmg, crit: r.crit });
-    for (var i = 0; i < (r.crit ? 10 : 5); i++) sparks.push({ x: ex, y: ey, vx: (Math.random() - 0.5) * 260, vy: (Math.random() - 0.7) * 260, t: 0.5, crit: r.crit });
-    if (r.crit) shake = 0.25;
+    burst(ex, ey, r.crit ? 11 : 5, r.crit);
+    if (r.crit) { shake = 0.25; hitStop = 0.04; PB.audio.crit(); } else PB.audio.hit();
+    if (r.combo > 0 && r.combo % 10 === 0) { rings.push({ x: ex, y: ey, r: 14, t: 0.7 }); PB.audio.combo(r.combo); }
+    PB.ui.updateCombat();
   }
+  function useAbility(slot) {
+    if (mode !== "battle" || blocked()) return;
+    var res = PB.combat.useAbility(slot);
+    if (!res) { PB.audio.nope(); return; }
+    var ex = VIEW_W / 2, ey = VIEW_H * 0.34;
+    if (res.dmg) { dmgPops.push({ x: ex, y: ey, t: 0.95, dmg: res.dmg, crit: true, label: res.name }); burst(ex, ey, 14, true); shake = 0.3; hitStop = 0.05; }
+    else if (res.heal) { dmgPops.push({ x: VIEW_W / 2, y: VIEW_H * 0.62, t: 0.95, heal: true, label: "+" + res.heal }); }
+    else { dmgPops.push({ x: ex, y: ey - 30, t: 0.9, buff: true, label: res.icon + " " + res.name + "!" }); }
+    PB.ui.updateCombat();
+  }
+  function fireUlt() {
+    if (mode !== "battle" || blocked()) return;
+    if (!PB.combat.ultReady()) { PB.audio.nope(); return; }
+    var res = PB.combat.ultimate(); if (!res) return;
+    var ex = VIEW_W / 2, ey = VIEW_H * 0.34;
+    dmgPops.push({ x: ex, y: ey, t: 1.15, dmg: res.dmg, crit: true, ult: true, label: "SWARM" });
+    burst(ex, ey, 36, true); shake = 0.55; hitStop = 0.06; flashScreen();
+    PB.ui.updateCombat();
+  }
+
   function onCanvasClick(ev) {
     if (blocked()) return;
-    if (mode === "catch") { if (PB.bait.ready()) startCatch(); }
-    else if (mode === "battle") doAttack();
+    if (mode === "catch") {
+      var r = canvas.getBoundingClientRect();
+      var cx = (ev.clientX - r.left) / r.width * VIEW_W, cy = (ev.clientY - r.top) / r.height * VIEW_H;
+      var best = -1, bestD = 1e9;
+      for (var i = 0; i < catchSpots.length; i++) { var s = catchSpots[i], d = Math.hypot(cx - s.x, cy - s.y); if (d < s.r && d < bestD) { bestD = d; best = s.slot; } }
+      if (best >= 0) startCatch(best);
+      else if (PB.bait.anyReady()) startCatch(PB.bait.firstReady());
+    } else if (mode === "battle") doAttack();
   }
 
   // ---- loop ----------------------------------------------------------------
@@ -121,24 +172,34 @@
   function updatePlay(dt) {
     if (dt <= 0) return;
     clock += dt;
+    var blk = PB.ui.isBlocking() || helpVisible || PB.catching.isActive();
+    var simDt = hitStop > 0 ? dt * 0.12 : dt;
+    if (hitStop > 0) hitStop = Math.max(0, hitStop - dt);
+
     PB.bait.update(dt);
-    PB.combat.update(dt);
+    PB.combat.update(simDt);
     if (PB.fx) PB.fx.update(dt);
     if (shake > 0) shake = Math.max(0, shake - dt);
 
-    for (var i = dmgPops.length - 1; i >= 0; i--) { dmgPops[i].t -= dt; dmgPops[i].y -= 64 * dt; if (dmgPops[i].t <= 0) dmgPops.splice(i, 1); }
-    for (var j = sparks.length - 1; j >= 0; j--) { var s = sparks[j]; s.t -= dt; s.x += s.vx * dt; s.y += s.vy * dt; s.vy += 500 * dt; if (s.t <= 0) sparks.splice(j, 1); }
+    for (var i = dmgPops.length - 1; i >= 0; i--) { dmgPops[i].t -= dt; dmgPops[i].y -= 60 * dt; if (dmgPops[i].t <= 0) dmgPops.splice(i, 1); }
+    for (var j = sparks.length - 1; j >= 0; j--) { var s = sparks[j]; s.t -= dt; s.x += s.vx * dt; s.y += s.vy * dt; s.vy += 520 * dt; if (s.t <= 0) sparks.splice(j, 1); }
+    for (var k = rings.length - 1; k >= 0; k--) { rings[k].t -= dt; rings[k].r += 220 * dt; if (rings[k].t <= 0) rings.splice(k, 1); }
 
-    if (PB.catching.isActive() || PB.ui.isBlocking() || helpVisible) PB.ui.setPrompt(null);
+    // bars visibility
+    PB.ui.showBaitBar(mode === "catch" && !blk);
+    PB.ui.showCombatBar(mode === "battle" && !blk && PB.teamBugs().length > 0);
+
+    if (blk) PB.ui.setPrompt(null);
     else if (mode === "catch") {
       PB.ui.refreshBait();
-      if (PB.bait.ready()) PB.ui.setPrompt("Tap the sparkling bug to catch it! 🪤");
-      else if (PB.bait.active()) PB.ui.setPrompt(null);
+      if (PB.bait.anyReady()) PB.ui.setPrompt("Tap the sparkling bug to catch it! 🪤");
+      else if (PB.bait.slots().some(function (_, i) { return PB.bait.isActive(i); })) PB.ui.setPrompt(null);
       else PB.ui.setPrompt("Choose fruit bait below to lure a bug. 🎣");
       PB.scene.updateFoliage(dt, []);
     } else if (mode === "battle") {
       PB.scene.updateFoliage(dt, []);
-      PB.ui.setPrompt(PB.teamBugs().length ? "Tap to attack! ⚔️" : "Add bugs to your team first (Bugs tab)!");
+      PB.ui.updateCombat();
+      PB.ui.setPrompt(PB.teamBugs().length ? null : "Add bugs to your team first (Bugs tab)! 🐛");
     }
 
     autosaveT += dt; if (autosaveT >= PB.config.AUTOSAVE_SEC) { autosaveT = 0; PB.touchSave(); PB.save.write(PB.state); }
@@ -156,64 +217,97 @@
     if (mode === "catch") drawCatch();
     else if (mode === "battle") drawBattle();
     PB.scene.drawForeground(ctx, parX, parY);
-
     if (PB.fx) { PB.fx.drawParticles(ctx, mode === "battle" ? "evening" : "day"); PB.fx.drawVignette(ctx); PB.fx.drawGrain(ctx); }
     ctx.restore();
   }
 
   function drawCatch() {
-    if (!PB.bait.ready()) return;
-    var p = PB.state.pending, cx = VIEW_W / 2, cy = VIEW_H * 0.6, bob = Math.sin(clock * 3) * 6;
-    if (p.sparkle) {
-      ctx.save(); ctx.globalAlpha = 0.5 + Math.sin(clock * 5) * 0.3;
-      for (var i = 0; i < 6; i++) { var a = clock * 1.5 + i; ctx.fillStyle = "#fff6c0"; ctx.beginPath(); ctx.arc(cx + Math.cos(a) * 60, cy - 30 + Math.sin(a) * 40, 3, 0, Math.PI * 2); ctx.fill(); }
-      ctx.restore();
+    catchSpots = [];
+    var lures = PB.bait.slots(), ready = [];
+    for (var i = 0; i < lures.length; i++) if (PB.bait.isReady(i)) ready.push(i);
+    if (!ready.length) return;
+    for (var n = 0; n < ready.length; n++) {
+      var slot = ready[n];
+      var frac = ready.length === 1 ? 0.5 : 0.30 + (n / (ready.length - 1)) * 0.40;
+      var cx = VIEW_W * frac, cy = VIEW_H * 0.6, bob = Math.sin(clock * 3 + n) * 6;
+      var p = lures[slot].pending;
+      if (p.sparkle) {
+        ctx.save(); ctx.globalAlpha = 0.5 + Math.sin(clock * 5 + n) * 0.3;
+        for (var s = 0; s < 6; s++) { var a = clock * 1.5 + s + n; ctx.fillStyle = "#fff6c0"; ctx.beginPath(); ctx.arc(cx + Math.cos(a) * 56, cy - 30 + Math.sin(a) * 38, 3, 0, Math.PI * 2); ctx.fill(); }
+        ctx.restore();
+      }
+      ctx.fillStyle = "rgba(0,0,0,0.16)"; ctx.beginPath(); ctx.ellipse(cx, cy + 6, 32, 9, 0, 0, Math.PI * 2); ctx.fill();
+      PB.art.drawCreature(ctx, p.sid, cx, cy + 6 - bob, 96, false, clock * 8 + n);
+      catchSpots.push({ slot: slot, x: cx, y: cy - 30, r: 80 });
     }
-    ctx.fillStyle = "rgba(0,0,0,0.16)"; ctx.beginPath(); ctx.ellipse(cx, cy + 6, 34, 9, 0, 0, Math.PI * 2); ctx.fill();
-    PB.art.drawCreature(ctx, p.sid, cx, cy + 6 - bob, 100, false, clock * 8);
   }
+
+  function modBadges(mods) { return mods.map(function (m) { return PB.mods[m].icon; }).join(" "); }
 
   function drawBattle() {
     var info = PB.combat.info(), e = PB.combat.enemy;
-    var ex = VIEW_W / 2, ey = VIEW_H * 0.36;
-    // enemy sprite (the uploaded creature art), squashing when hit
-    var sc = e.hurt > 0 ? 0.9 : 1, size = e.boss ? 168 : 130;
+    var ex = VIEW_W / 2, ey = VIEW_H * 0.32;
+    var sc = 1 - Math.min(0.24, e.hurt * 0.9), size = e.boss ? 162 : 126;
     ctx.save(); ctx.translate(ex, ey); ctx.scale(sc, 2 - sc); ctx.translate(-ex, -ey);
     ctx.fillStyle = "rgba(0,0,0,0.18)"; ctx.beginPath(); ctx.ellipse(ex, ey + size * 0.42, size * 0.5, size * 0.12, 0, 0, Math.PI * 2); ctx.fill();
-    if (e.hurt > 0) { ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = e.hurt * 3; }
+    if (e.hurt > 0) { ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = e.hurt * 2.4; }
     PB.art.drawCreature(ctx, e.sid, ex, ey + size * 0.4, size, false, clock * 6);
     if (e.hurt > 0) ctx.restore();
     ctx.restore();
-    // enemy HP bar
-    var bw = 300, bx = ex - bw / 2, by = ey - size * 0.55;
+
+    // combo rings
+    for (var r = 0; r < rings.length; r++) { ctx.globalAlpha = Math.max(0, rings[r].t); ctx.strokeStyle = "#f6c453"; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(ex, ey + size * 0.2, rings[r].r, 0, Math.PI * 2); ctx.stroke(); }
+    ctx.globalAlpha = 1;
+
+    // enemy bars
+    var bw = 320, bx = ex - bw / 2, by = ey - size * 0.58;
+    if (info.maxShield > 0) {
+      fillRR("rgba(0,0,0,0.25)", bx - 3, by - 22, bw + 6, 14, 7);
+      fillRR("#caa23a", bx, by - 21, bw * Math.max(0, info.shield / info.maxShield), 12, 6);
+    }
     fillRR("rgba(0,0,0,0.25)", bx - 3, by - 3, bw + 6, 22, 9);
     fillRR("#3a2f25", bx, by, bw, 16, 7);
     fillRR(e.boss ? "#c44fb0" : "#ef6b6b", bx, by, bw * Math.max(0, info.hp / info.max), 16, 7);
     ctx.fillStyle = "#fff"; ctx.font = "bold 15px 'Trebuchet MS',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.fillText((e.boss ? "👑 " : "") + e.name + "  " + Math.ceil(info.hp) + "/" + info.max, ex, by + 8);
-    // your team at the bottom, bouncing (lunge forward on recent hit)
-    var team = PB.teamBugs();
-    for (var i = 0; i < team.length; i++) {
-      var fx = ex - (team.length - 1) * 70 / 2 + i * 70, fy = VIEW_H * 0.86 + Math.sin(clock * 5 + i) * 5;
-      PB.art.drawCreature(ctx, team[i].sid, fx, fy, 70, false, clock * 2 + i * 9);
+    if (info.mods.length) {
+      ctx.font = "16px 'Trebuchet MS',sans-serif";
+      ctx.fillText(modBadges(info.mods), ex, by - (info.maxShield > 0 ? 32 : 16));
+      ctx.font = "bold 12px 'Trebuchet MS',sans-serif"; ctx.fillStyle = "#ffe3a0";
+      ctx.fillText(PB.mods[info.mods[0]].name + ": " + PB.mods[info.mods[0]].blurb, ex, by + 30);
     }
-    if (!team.length) { ctx.fillStyle = "rgba(74,63,53,0.85)"; ctx.font = "bold 17px 'Trebuchet MS',sans-serif"; ctx.textAlign = "center"; ctx.fillText("No team! Add bugs in the Bugs tab.", ex, VIEW_H * 0.84); }
+
+    // your team (bouncing), positioned above the combat bar
+    var team = PB.teamBugs();
+    var spread = Math.min(78, 360 / Math.max(1, team.length));
+    for (var i = 0; i < team.length; i++) {
+      var fx = ex - (team.length - 1) * spread / 2 + i * spread, fy = VIEW_H * 0.66 + Math.sin(clock * 5 + i) * 5;
+      PB.art.drawCreature(ctx, team[i].sid, fx, fy, 64, false, clock * 2 + i * 9);
+    }
+    if (!team.length) { ctx.fillStyle = "rgba(74,63,53,0.9)"; ctx.font = "bold 17px 'Trebuchet MS',sans-serif"; ctx.textAlign = "center"; ctx.fillText("No team! Add bugs in the Bugs tab.", ex, VIEW_H * 0.62); }
+
     // team HP bar
-    var tw = 260, tx = ex - tw / 2, ty = VIEW_H * 0.93;
+    var tw = 280, tx = ex - tw / 2, ty = VIEW_H * 0.71;
     fillRR("rgba(0,0,0,0.25)", tx - 3, ty - 3, tw + 6, 18, 8);
     fillRR("#3a2f25", tx, ty, tw, 12, 6);
-    fillRR(PB.combat.teamFlash > 0 ? "#fff" : "#7cc36b", tx, ty, tw * (info.teamMax ? info.teamHp / info.teamMax : 0), 12, 6);
-    ctx.fillStyle = "#fff"; ctx.font = "bold 12px 'Trebuchet MS',sans-serif"; ctx.fillText("Team HP " + info.teamHp + "/" + info.teamMax, ex, ty + 6);
+    fillRR(PB.combat.teamFlash > 0 ? "#fff" : (PB.combat.fx.guard > 0 ? "#8fd6ff" : "#7cc36b"), tx, ty, tw * (info.teamMax ? info.teamHp / info.teamMax : 0), 12, 6);
+    ctx.fillStyle = "#fff"; ctx.font = "bold 12px 'Trebuchet MS',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText("Team HP " + info.teamHp + "/" + info.teamMax + (PB.combat.fx.guard > 0 ? "  🛡️" : ""), ex, ty + 6);
+
     // sparks
-    for (var s = 0; s < sparks.length; s++) { var sp = sparks[s]; ctx.globalAlpha = Math.max(0, sp.t * 2); ctx.fillStyle = sp.crit ? "#f6c453" : "#fff3c0"; ctx.beginPath(); ctx.arc(sp.x, sp.y, sp.crit ? 5 : 3, 0, Math.PI * 2); ctx.fill(); }
+    for (var sp = 0; sp < sparks.length; sp++) { var pp = sparks[sp]; ctx.globalAlpha = Math.max(0, pp.t * 2); ctx.fillStyle = pp.crit ? "#f6c453" : "#fff3c0"; ctx.beginPath(); ctx.arc(pp.x, pp.y, pp.crit ? 5 : 3, 0, Math.PI * 2); ctx.fill(); }
     ctx.globalAlpha = 1;
-    // damage numbers
+
+    // damage / labels
     ctx.textAlign = "center";
     for (var d = 0; d < dmgPops.length; d++) {
       var dp = dmgPops[d]; ctx.globalAlpha = Math.max(0, dp.t);
-      ctx.font = "bold " + (dp.crit ? 34 : 24) + "px 'Trebuchet MS',sans-serif";
-      ctx.lineWidth = 3; ctx.strokeStyle = dp.crit ? "#a8521f" : "#b23b3b"; ctx.fillStyle = dp.crit ? "#f6c453" : "#fff";
-      var txt = (dp.crit ? "CRIT " : "") + dp.dmg;
+      if (dp.heal) { ctx.font = "bold 24px 'Trebuchet MS',sans-serif"; ctx.lineWidth = 3; ctx.strokeStyle = "#2f7d3a"; ctx.fillStyle = "#bff5c0"; ctx.strokeText(dp.label, dp.x, dp.y); ctx.fillText(dp.label, dp.x, dp.y); continue; }
+      if (dp.buff) { ctx.font = "bold 22px 'Trebuchet MS',sans-serif"; ctx.lineWidth = 3; ctx.strokeStyle = "#7a5cc4"; ctx.fillStyle = "#e8dcff"; ctx.strokeText(dp.label, dp.x, dp.y); ctx.fillText(dp.label, dp.x, dp.y); continue; }
+      var fsize = dp.ult ? 46 : (24 + Math.min(1, dp.dmg / Math.max(1, info.max)) * 20);
+      ctx.font = "bold " + Math.round(fsize) + "px 'Trebuchet MS',sans-serif";
+      ctx.lineWidth = 3; ctx.strokeStyle = dp.ult ? "#7a2fb0" : dp.crit ? "#a8521f" : "#b23b3b"; ctx.fillStyle = dp.ult ? "#ffd86b" : dp.crit ? "#f6c453" : "#fff";
+      var txt = (dp.label ? dp.label + " " : (dp.crit ? "CRIT " : "")) + dp.dmg;
       ctx.strokeText(txt, dp.x, dp.y); ctx.fillText(txt, dp.x, dp.y);
     }
     ctx.globalAlpha = 1;

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Poke Bug — A Cozy Bug Idle RPG</title>
-  <meta name="description" content="A cozy idle RPG: bait & catch bugs, merge them in the lab, and battle through areas with your squishy bug team." />
+  <meta name="description" content="A cozy idle & gacha RPG: bait & catch bugs, pull capsules, merge in the lab, and battle through areas with combos, abilities & a SWARM ultimate." />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
@@ -16,8 +16,10 @@
 
       <div id="hud" class="hud hidden">
         <div class="hud-pill"><span class="hud-icon">🎟️</span><span id="tok-text">0</span></div>
+        <div class="hud-pill glim"><span class="hud-icon">✨</span><span id="glim-text">0</span></div>
         <div class="hud-pill"><span class="hud-icon">🐛</span><span id="dex-text">0/8</span></div>
         <div class="hud-pill"><span class="hud-icon">💪</span><span id="pow-text">0</span></div>
+        <button id="goals-pill" class="hud-pill hud-btn"><span class="hud-icon">🎯</span>Goals<span id="goals-badge" class="goals-badge hidden">0</span></button>
       </div>
 
       <!-- Area selector -->
@@ -33,12 +35,23 @@
       <!-- Bait bar (Catch mode) -->
       <div id="bait-bar" class="bait-bar hidden"></div>
 
+      <!-- Combat bar (Battle mode): combo + abilities + SWARM -->
+      <div id="combat-bar" class="combat-bar hidden">
+        <div id="combo-tag" class="combo-tag hidden"></div>
+        <div class="combat-controls">
+          <div id="ability-row" class="ability-row"></div>
+          <button id="ult-btn" class="ult-btn"><span id="ult-fill" class="ult-fill"></span><span id="ult-label" class="ult-label">SWARM</span></button>
+        </div>
+      </div>
+
       <!-- Bottom navigation -->
       <div id="navbar" class="navbar hidden">
         <button data-nav="catch"><span class="nav-em">🎣</span><span>Catch</span></button>
         <button data-nav="battle"><span class="nav-em">⚔️</span><span>Battle</span></button>
         <button data-nav="bugs"><span class="nav-em">🐛</span><span>Bugs</span></button>
+        <button data-nav="capsule"><span class="nav-em">🎰</span><span>Capsule</span></button>
         <button data-nav="lab"><span class="nav-em">⚗️</span><span>Lab</span></button>
+        <button data-nav="shop"><span class="nav-em">🛒</span><span>Shop</span></button>
       </div>
 
       <!-- Catch mini-game -->
@@ -51,7 +64,7 @@
             <div class="catch-sweet" id="catch-sweet"></div>
             <div class="catch-marker" id="catch-marker"></div>
           </div>
-          <div class="catch-hint">Tap / <kbd>Space</kbd> in the green — aim for the <b>sweet spot</b>!</div>
+          <div class="catch-hint">Tap / <kbd>Space</kbd> in the green — aim for the bright <b>sweet spot</b>!</div>
           <div class="catch-attempts" id="catch-attempts"></div>
         </div>
       </div>
@@ -81,11 +94,35 @@
         </div>
       </div>
 
+      <!-- Capsule machine (gacha) -->
+      <div id="capsule-overlay" class="overlay hidden">
+        <div class="panel-window">
+          <div class="panel-header">🎰 Capsule Machine <button class="panel-close" id="capsule-close">✕</button></div>
+          <div class="panel-body" id="capsule-body"></div>
+        </div>
+      </div>
+
       <!-- Lab (merge) -->
       <div id="lab-overlay" class="overlay hidden">
         <div class="panel-window">
           <div class="panel-header">⚗️ Merge Lab <button class="panel-close" id="lab-close">✕</button></div>
           <div class="panel-body" id="lab-body"></div>
+        </div>
+      </div>
+
+      <!-- Shop (upgrades) -->
+      <div id="shop-overlay" class="overlay hidden">
+        <div class="panel-window">
+          <div class="panel-header">🛒 Upgrades <button class="panel-close" id="shop-close">✕</button></div>
+          <div class="panel-body" id="shop-body"></div>
+        </div>
+      </div>
+
+      <!-- Goals (quests) -->
+      <div id="quests-overlay" class="overlay hidden">
+        <div class="panel-window small">
+          <div class="panel-header">🎯 Goals <button class="panel-close" id="quests-close">✕</button></div>
+          <div class="panel-body" id="quests-body"></div>
         </div>
       </div>
 
@@ -109,11 +146,11 @@
         <div class="help-box">
           <h2>How to Play</h2>
           <ul>
-            <li>🎣 <b>Catch</b> — set <b>fruit bait</b> and wait for a bug (skip the wait with 🎟️ tokens). Rarer bugs <b>sparkle</b> and have a <b>talent</b>. Tap the bug, then beat the <b>shrinking</b> catch bar.</li>
-            <li>🐛 <b>Bugs</b> — build a <b>team</b> of 3. Talents buff the whole team (Mighty/Lucky/Healer/Tough/Swift), so mix wisely!</li>
-            <li>⚔️ <b>Battle</b> — <b>tap to attack</b> (your team also fights on its own). Clear waves, beat the <b>boss</b> to <b>unlock the next area</b>, and earn tokens.</li>
-            <li>⚗️ <b>Lab</b> — <b>merge</b> two of the same bug into a bigger, stronger one.</li>
-            <li>Use the <b>◀ ▶</b> at the top to travel between unlocked areas. <kbd>Esc</kbd> closes a window.</li>
+            <li>🎣 <b>Catch</b> — set <b>fruit bait</b> in your lure slots and wait (skip with 🎟️). When a bug appears, tap it and stop the marker in the green — hit the <b>sweet spot</b> for a bigger catch. Sparkling bugs are <b>rare</b> & carry a <b>talent</b>.</li>
+            <li>🎰 <b>Capsule</b> — spend ✨ <b>Glimmer</b> (earned in battle) to pull a random bug. Transparent odds + pity (guaranteed Rare/Epic).</li>
+            <li>🐛 <b>Bugs</b> — build a <b>team</b>. Talents buff the team <i>and</i> give each bug a battle <b>ability</b>.</li>
+            <li>⚔️ <b>Battle</b> — <b>tap</b> to build a <b>combo</b>, fire team <b>abilities</b>, and unleash the <b>SWARM</b> ultimate. Read enemy <b>modifiers</b> and pick your tactic. Beat the boss to unlock the next area.</li>
+            <li>⚗️ <b>Lab</b> — <b>merge</b> two of the same bug into a bigger, stronger one. 🛒 <b>Shop</b> — spend 🎟️ on upgrades (more lure slots, idle power, catch assist…). 🎯 <b>Goals</b> for bonus rewards.</li>
           </ul>
           <button class="btn-primary" id="btn-help-close">Got it!</button>
         </div>
@@ -129,10 +166,12 @@
   <script src="js/state.js"></script>
   <script src="js/scene.js"></script>
   <script src="js/bait.js"></script>
+  <script src="js/quests.js"></script>
   <script src="js/collection.js"></script>
   <script src="js/catching.js"></script>
   <script src="js/combat.js"></script>
   <script src="js/merge.js"></script>
+  <script src="js/gacha.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/input.js"></script>
   <script src="js/fx.js"></script>

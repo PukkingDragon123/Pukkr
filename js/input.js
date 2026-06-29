@@ -5,6 +5,7 @@
   "use strict";
 
   var ACTION = { " ": 1, e: 1, enter: 1 };
+  var ABILITY = { z: 0, x: 1, c: 2, v: 3, b: 4 };
   function key(e) { return (e.key || "").toLowerCase(); }
 
   PB.input = { init: function () { window.addEventListener("keydown", onDown); } };
@@ -21,11 +22,16 @@
     if (PB.ui.isBlocking()) { if (k === "escape") PB.ui.closeOverlays(); return; }
 
     if (ACTION[k]) { PB.main.interact(); return; }
+    if (k === "q" && PB.main.mode() === "battle") { PB.main.fireUlt(); return; }
+    if (ABILITY[k] !== undefined && PB.main.mode() === "battle") { PB.main.useAbility(ABILITY[k]); return; }
     if (k === "h" || k === "?") { PB.main.openHelp(); return; }
+    if (k === "g") { PB.ui.openQuests(); return; }
     if (k === "1") PB.main.nav("catch");
     else if (k === "2") PB.main.nav("battle");
     else if (k === "3") PB.main.nav("bugs");
     else if (k === "4") PB.main.nav("lab");
+    else if (k === "5") PB.main.nav("capsule");
+    else if (k === "6") PB.main.nav("shop");
   }
 
 })(window.PB = window.PB || {});

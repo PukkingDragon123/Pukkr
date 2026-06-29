@@ -64,6 +64,18 @@
     evolve:  function () { arp([523, 659, 784, 1047, 1319], 0.11, "triangle", 0.17); },
     donate:  function () { arp([659, 784, 988], 0.1, "sine", 0.15); },
     visitor: function () { arp([880, 1175], 0.08, "triangle", 0.12); },
+
+    // --- idle-RPG cues -----------------------------------------------------
+    hit:     function () { blip(300 + Math.random() * 60, 0.05, "square", 0.07); },
+    crit:    function () { blip(720, 0.06, "square", 0.12); blip(990, 0.09, "triangle", 0.1, 0.03); },
+    combo:   function (n) { blip(520 + Math.min(n, 16) * 40, 0.05, "triangle", 0.08); },
+    charge:  function () { blip(660, 0.05, "sine", 0.06); blip(880, 0.05, "sine", 0.05, 0.02); },
+    ult:     function () { arp([392, 523, 659, 784, 1047, 1319], 0.07, "sawtooth", 0.16); blip(110, 0.5, "sine", 0.2); },
+    pull:    function () { blip(330, 0.5, "sine", 0.08); blip(440, 0.5, "sine", 0.06, 0.1); },
+    reveal:  function (n) { arp([523, 659, 784, 988, 1175].slice(0, 2 + (n || 0)), 0.08, "triangle", 0.16); },
+    buy:     function () { arp([784, 1047], 0.06, "square", 0.12); },
+    nope:    function () { blip(180, 0.14, "sawtooth", 0.1); },
+    quest:   function () { arp([659, 880, 1175], 0.09, "triangle", 0.15); },
   };
 
 })(window.PB = window.PB || {});
