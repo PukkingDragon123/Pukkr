@@ -13,7 +13,11 @@
       PB.state.stats.caught += 1;
       var wasNew = !PB.dexSeen(p.sid);
       PB.state.stats.dex[p.sid] = (PB.state.stats.dex[p.sid] || 0) + 1;
-      if (wasNew) { PB.addGlimmer(3); if (PB.quests) PB.quests.progress("dex", 1); }
+      if (wasNew) {
+        PB.addGlimmer(3); if (PB.quests) PB.quests.progress("dex", 1);
+        var mA = PB.checkMastery();
+        if (mA && PB.ui) PB.ui.toast("🏅 " + mA.name + " mastered! +30 ✨ · permanent +3% team power!", "candy");
+      }
       var rar = PB.speciesById[p.sid].rarity;
       if ((rar === "rare" || rar === "epic") && PB.quests) PB.quests.progress("rare", 1);
       if (PB.state.team.length < PB.teamSize()) PB.state.team.push(bug.uid);

@@ -26,30 +26,75 @@
     epic:     { label: "Epic",     value: 48, star: "★★★★", talent: 0.85, col: "#f0a93a" },
   };
 
+  // Elements — a cozy 5-ring (each beats the next) plus Bug, the neutral glue.
+  // grass ▸ water ▸ fire ▸ rock ▸ bolt ▸ grass. Bug deals & takes ×1 to all.
+  PB.elements = {
+    bug:   { name: "Bug",   icon: "🐛", col: "#9bb26b" },
+    grass: { name: "Grass", icon: "🌿", col: "#7bbf5a" },
+    water: { name: "Water", icon: "💧", col: "#4aa6d8" },
+    fire:  { name: "Fire",  icon: "🔥", col: "#ef6a4a" },
+    rock:  { name: "Rock",  icon: "🪨", col: "#b8946a" },
+    bolt:  { name: "Bolt",  icon: "⚡", col: "#f4c63a" },
+  };
+  PB.elBeats = { grass: "water", water: "fire", fire: "rock", rock: "bolt", bolt: "grass" };
+
   // The collectible / fightable creatures (hand-drawn for the 5; procedural for the rest).
   PB.species = [
-    { id: "caterpie", name: "Caterpie", dex: 10, rarity: "common", baseSize: 28,
+    // --- hand-drawn ---
+    { id: "caterpie", name: "Caterpie", dex: 10, rarity: "common", baseSize: 28, el: "grass",
       blurb: "A gentle grub that nibbles leaves all day." },
-    { id: "weedle", name: "Weedle", dex: 13, rarity: "common", baseSize: 30,
+    { id: "weedle", name: "Weedle", dex: 13, rarity: "common", baseSize: 30, el: "bug",
       blurb: "A hairy grub with a sharp stinger." },
-    { id: "shuckle", name: "Shuckle", dex: 213, rarity: "uncommon", baseSize: 30,
+    { id: "shuckle", name: "Shuckle", dex: 213, rarity: "uncommon", baseSize: 30, el: "rock",
       blurb: "A tough little shell that ferments berries." },
-    { id: "paras", name: "Paras", dex: 46, rarity: "rare", baseSize: 34,
+    { id: "paras", name: "Paras", dex: 46, rarity: "rare", baseSize: 34, el: "grass",
       blurb: "Mushroom-backed and surprisingly sturdy." },
-    { id: "wimpod", name: "Wimpod", dex: 767, rarity: "epic", baseSize: 46,
+    { id: "wimpod", name: "Wimpod", dex: 767, rarity: "epic", baseSize: 46, el: "water",
       blurb: "Timid, but fast and full of surprises." },
-    { id: "corphish", name: "Corphish", dex: 341, rarity: "common", baseSize: 30,
+    // --- procedural: beach ---
+    { id: "corphish", name: "Corphish", dex: 341, rarity: "common", baseSize: 30, el: "water",
       look: { body: "crab", c1: "#e0533f", c2: "#f0c040", c3: "#222", claws: true },
       blurb: "A hardy crawdad that loves a scrap." },
-    { id: "dwebble", name: "Dwebble", dex: 557, rarity: "uncommon", baseSize: 30,
+    { id: "dwebble", name: "Dwebble", dex: 557, rarity: "uncommon", baseSize: 30, el: "rock",
       look: { body: "crab", c1: "#e0a86a", c2: "#9aa0a6", c3: "#222", claws: true, shell: true },
       blurb: "Carries a sturdy stone shield on its back." },
-    { id: "anorith", name: "Anorith", dex: 347, rarity: "rare", baseSize: 40,
+    { id: "anorith", name: "Anorith", dex: 347, rarity: "rare", baseSize: 40, el: "water",
       look: { body: "shrimp", c1: "#7fb0d8", c2: "#2a4d6e", c3: "#222" },
       blurb: "An ancient swimmer with slashing claws." },
+    // --- procedural: new biomes ---
+    { id: "emberling", name: "Emberling", dex: 900, rarity: "common", baseSize: 32, el: "fire",
+      look: { body: "beetle", c1: "#e0533f", c2: "#f0c040", c3: "#222", horn: true },
+      blurb: "A hot-shelled beetle that smoulders softly." },
+    { id: "cindermoth", name: "Cindermoth", dex: 901, rarity: "rare", baseSize: 36, el: "fire",
+      look: { body: "moth", c1: "#c23a2a", c2: "#ffb04a", c3: "#fff" },
+      blurb: "Ashen wings that glow at the edges." },
+    { id: "frostnip", name: "Frostnip", dex: 902, rarity: "common", baseSize: 28, el: "water",
+      look: { body: "grub", c1: "#bfe6f2", c2: "#5aa6d8", c3: "#222" },
+      blurb: "A chilly grub that leaves frost trails." },
+    { id: "glaciant", name: "Glaciant", dex: 903, rarity: "epic", baseSize: 46, el: "water",
+      look: { body: "beetle", c1: "#9fd8ee", c2: "#ffffff", c3: "#222", horn: true },
+      blurb: "An icy titan-beetle from the deep tundra." },
+    { id: "sporewing", name: "Sporewing", dex: 904, rarity: "uncommon", baseSize: 34, el: "grass",
+      look: { body: "moth", c1: "#7bbf5a", c2: "#c9e89a", c3: "#3a5a2a" },
+      blurb: "Its wings puff gentle healing spores." },
+    { id: "thornmant", name: "Thornmant", dex: 905, rarity: "rare", baseSize: 42, el: "grass",
+      look: { body: "mantis", c1: "#4f8f3a", c2: "#b6e06a", c3: "#222" },
+      blurb: "A leafy mantis with thorn-blade arms." },
+    { id: "glimmerfly", name: "Glimmerfly", dex: 906, rarity: "rare", baseSize: 26, el: "bolt",
+      look: { body: "firefly", c1: "#3a3a4a", c2: "#f4c63a", c3: "#222" },
+      blurb: "A firefly crackling with tiny sparks." },
+    { id: "voltspider", name: "Voltspider", dex: 907, rarity: "uncommon", baseSize: 34, el: "bolt",
+      look: { body: "spider", c1: "#f0d24a", c2: "#2a2a3a", c3: "#222", mark: true },
+      blurb: "Its web hums with static electricity." },
+    { id: "gravelback", name: "Gravelback", dex: 908, rarity: "common", baseSize: 34, el: "rock",
+      look: { body: "beetle", c1: "#b8946a", c2: "#7a6048", c3: "#222", horn: true },
+      blurb: "A stout beetle armoured in pebbles." },
+    { id: "stoneweaver", name: "Stoneweaver", dex: 909, rarity: "uncommon", baseSize: 32, el: "rock",
+      look: { body: "spider", c1: "#9aa0a6", c2: "#6a6e74", c3: "#fff", mark: true },
+      blurb: "Spins silk threaded with fine grit." },
   ];
   PB.speciesById = {};
-  PB.species.forEach(function (s) { PB.speciesById[s.id] = s; });
+  PB.species.forEach(function (s) { if (!s.el) s.el = "bug"; PB.speciesById[s.id] = s; });
 
   // Talents — rare/special catches sparkle and carry one. They buff the team AND
   // grant that bug an active battle ability (see combat.js / PB.abilities).
@@ -132,16 +177,36 @@
     { type: "dex",    target: 1, text: "Discover a new species",    reward: { glimmer: 6 } },
   ];
 
-  // Areas unlock in order by beating each one's boss.
+  // Areas unlock in order by beating each one's boss. Each biome has an element
+  // (its foes lean to it) and a `scene` palette that drives the faux-3D renderer.
   PB.areas = [
-    { id: "woods", name: "Whispering Woods", bg: "forest",
-      bugs: ["caterpie", "weedle", "shuckle", "paras"], foes: ["caterpie", "weedle", "paras"], waves: 5 },
-    { id: "beach", name: "Sunny Beach", bg: "beach",
-      bugs: ["corphish", "dwebble", "wimpod"], foes: ["corphish", "dwebble", "wimpod"], waves: 6 },
-    { id: "grove", name: "Glowing Grove", bg: "forest",
-      bugs: ["paras", "shuckle", "anorith", "wimpod"], foes: ["paras", "shuckle", "anorith"], waves: 7 },
-    { id: "reef", name: "Coral Reef", bg: "beach",
-      bugs: ["anorith", "wimpod", "corphish", "dwebble"], foes: ["wimpod", "anorith", "dwebble"], waves: 8 },
+    { id: "woods", name: "Whispering Woods", el: "grass",
+      bugs: ["caterpie", "weedle", "shuckle", "paras"], foes: ["caterpie", "weedle", "paras"], waves: 5,
+      scene: { style: "forest", sky: ["#cfe6c4", "#7fb069"], ground: ["#6f9c4f", "#3f5a2a"], fog: "#dff0d8", light: "#fff7d0", accent: "#e88a8a", sunX: 0.72, sunY: 0.18 } },
+    { id: "beach", name: "Sunny Beach", el: "water",
+      bugs: ["corphish", "dwebble", "wimpod"], foes: ["corphish", "dwebble", "wimpod"], waves: 6,
+      scene: { style: "beach", sky: ["#bfe9ff", "#ffe6bd"], ground: ["#f0dba6", "#e0c184"], fog: "#e6f2f0", light: "#fff4cf", accent: "#5fc7d6", sunX: 0.78, sunY: 0.16 } },
+    { id: "grove", name: "Glowing Grove", el: "grass",
+      bugs: ["paras", "shuckle", "sporewing", "caterpie"], foes: ["paras", "sporewing", "thornmant"], waves: 7,
+      scene: { style: "forest", sky: ["#d6ebd0", "#88c07a"], ground: ["#5f9048", "#37502a"], fog: "#e6f4de", light: "#f0ffd8", accent: "#9be27f", sunX: 0.6, sunY: 0.2 } },
+    { id: "reef", name: "Coral Reef", el: "water",
+      bugs: ["anorith", "wimpod", "corphish", "dwebble"], foes: ["wimpod", "anorith", "dwebble"], waves: 8,
+      scene: { style: "beach", sky: ["#a8e0ff", "#cfeffb"], ground: ["#e8d3a0", "#d8bf88"], fog: "#dff4f4", light: "#fbfff0", accent: "#49b6c9", sunX: 0.7, sunY: 0.14 } },
+    { id: "cavern", name: "Crystal Cavern", el: "rock",
+      bugs: ["gravelback", "stoneweaver", "glimmerfly", "shuckle"], foes: ["gravelback", "stoneweaver", "glimmerfly"], waves: 7,
+      scene: { style: "cave", sky: ["#3a2f4a", "#221830"], ground: ["#463857", "#281f38"], fog: "#5a4a7a", light: "#c9a0ff", accent: "#7fe6d8", sunX: 0.5, sunY: 0.14 } },
+    { id: "emberpeak", name: "Emberpeak", el: "fire",
+      bugs: ["emberling", "cindermoth", "gravelback"], foes: ["emberling", "cindermoth", "gravelback"], waves: 8,
+      scene: { style: "volcano", sky: ["#5a2a2a", "#241214"], ground: ["#3a2020", "#1c0f10"], fog: "#7a3a2a", light: "#ffb04a", accent: "#ff6a3a", sunX: 0.5, sunY: 0.16 } },
+    { id: "tundra", name: "Frostpine Tundra", el: "water",
+      bugs: ["frostnip", "glaciant", "wimpod"], foes: ["frostnip", "glaciant", "wimpod"], waves: 8,
+      scene: { style: "tundra", sky: ["#cfe6f5", "#eef6fb"], ground: ["#e2eef7", "#bcd2e2"], fog: "#eaf4fb", light: "#fffdf2", accent: "#8fd0e8", sunX: 0.72, sunY: 0.16 } },
+    { id: "marsh", name: "Mistmarsh", el: "grass",
+      bugs: ["sporewing", "thornmant", "paras", "anorith"], foes: ["sporewing", "thornmant", "anorith"], waves: 9,
+      scene: { style: "swamp", sky: ["#a6b88f", "#c9d6ab"], ground: ["#566a40", "#33422a"], fog: "#c2d0b0", light: "#eef0be", accent: "#7fbf6a", sunX: 0.55, sunY: 0.2 } },
+    { id: "dunes", name: "Thunder Dunes", el: "bolt",
+      bugs: ["voltspider", "glimmerfly", "gravelback"], foes: ["voltspider", "glimmerfly", "gravelback"], waves: 9,
+      scene: { style: "desert", sky: ["#d8c48a", "#a89bd0"], ground: ["#e6c98c", "#c49a5e"], fog: "#e8dcc0", light: "#fff4cf", accent: "#f4c63a", sunX: 0.7, sunY: 0.16 } },
   ];
 
   PB.sizeLabelFor = function (ratio) {

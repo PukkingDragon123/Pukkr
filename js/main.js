@@ -84,10 +84,11 @@
     updateNav(); PB.ui.updateHUD();
   }
   function updateNav() { var b = $("navbar").querySelectorAll("[data-nav]"); for (var i = 0; i < b.length; i++) { var n = b[i].getAttribute("data-nav"); b[i].classList.toggle("active", (n === "catch" || n === "battle") && n === mode); } }
-  function switchArea(d) {
-    var i = PB.state.area + d;
+  function switchArea(d) { goArea(PB.state.area + d); }
+  function goArea(i) {
     if (i < 0 || i >= PB.areas.length) return;
     if (i >= PB.state.unlocked) { PB.ui.toast("🔒 Beat the boss to unlock " + PB.areas[i].name + "!", ""); return; }
+    if (i === PB.state.area) return;
     PB.state.area = i; flashScreen();
     if (mode === "battle") PB.combat.reset();
     PB.ui.refreshBait(); PB.ui.updateHUD();
@@ -100,6 +101,7 @@
     playFromTitle: function () { if (PB.save.exists()) continueGame(); else newGameStart(); },
     startCatch: startCatch, interact: interact,
     useAbility: useAbility, fireUlt: fireUlt, labBurst: function () { flashScreen(); },
+    goArea: goArea,
     mode: function () { return mode; },
     nav: function (n) {
       PB.audio.resume();
@@ -128,7 +130,7 @@
 
   function doAttack() {
     var r = PB.combat.click(), ex = VIEW_W / 2, ey = VIEW_H * 0.34;
-    dmgPops.push({ x: ex + (Math.random() - 0.5) * 90, y: ey, t: 0.8, dmg: r.dmg, crit: r.crit });
+    dmgPops.push({ x: ex + (Math.random() - 0.5) * 90, y: ey, t: 0.8, dmg: r.dmg, crit: r.crit, superEff: r.superEff });
     burst(ex, ey, r.crit ? 11 : 5, r.crit);
     if (r.crit) { shake = 0.25; hitStop = 0.04; PB.audio.crit(); } else PB.audio.hit();
     if (r.combo > 0 && r.combo % 10 === 0) { rings.push({ x: ex, y: ey, r: 14, t: 0.7 }); PB.audio.combo(r.combo); }
@@ -268,13 +270,20 @@
     fillRR("rgba(0,0,0,0.25)", bx - 3, by - 3, bw + 6, 22, 9);
     fillRR("#3a2f25", bx, by, bw, 16, 7);
     fillRR(e.boss ? "#c44fb0" : "#ef6b6b", bx, by, bw * Math.max(0, info.hp / info.max), 16, 7);
+    var foeEl = PB.elements[info.foeEl] || PB.elements.bug;
     ctx.fillStyle = "#fff"; ctx.font = "bold 15px 'Trebuchet MS',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.fillText((e.boss ? "👑 " : "") + e.name + "  " + Math.ceil(info.hp) + "/" + info.max, ex, by + 8);
+    ctx.fillText((e.boss ? "👑 " : "") + foeEl.icon + " " + e.name + "  " + Math.ceil(info.hp) + "/" + info.max, ex, by + 8);
     if (info.mods.length) {
       ctx.font = "16px 'Trebuchet MS',sans-serif";
       ctx.fillText(modBadges(info.mods), ex, by - (info.maxShield > 0 ? 32 : 16));
       ctx.font = "bold 12px 'Trebuchet MS',sans-serif"; ctx.fillStyle = "#ffe3a0";
       ctx.fillText(PB.mods[info.mods[0]].name + ": " + PB.mods[info.mods[0]].blurb, ex, by + 30);
+    }
+    // element effectiveness telegraph
+    if (info.elemMult !== 1) {
+      ctx.font = "bold 13px 'Trebuchet MS',sans-serif";
+      ctx.fillStyle = info.elemMult > 1 ? "#bff5a0" : "#e0c0c0";
+      ctx.fillText(info.elemMult > 1 ? "⚡ SUPER EFFECTIVE ×1.5" : "resisted ×0.75 — try another team element", ex, by + (info.mods.length ? 46 : 30));
     }
 
     // your team (bouncing), positioned above the combat bar
@@ -306,8 +315,12 @@
       if (dp.buff) { ctx.font = "bold 22px 'Trebuchet MS',sans-serif"; ctx.lineWidth = 3; ctx.strokeStyle = "#7a5cc4"; ctx.fillStyle = "#e8dcff"; ctx.strokeText(dp.label, dp.x, dp.y); ctx.fillText(dp.label, dp.x, dp.y); continue; }
       var fsize = dp.ult ? 46 : (24 + Math.min(1, dp.dmg / Math.max(1, info.max)) * 20);
       ctx.font = "bold " + Math.round(fsize) + "px 'Trebuchet MS',sans-serif";
-      ctx.lineWidth = 3; ctx.strokeStyle = dp.ult ? "#7a2fb0" : dp.crit ? "#a8521f" : "#b23b3b"; ctx.fillStyle = dp.ult ? "#ffd86b" : dp.crit ? "#f6c453" : "#fff";
-      var txt = (dp.label ? dp.label + " " : (dp.crit ? "CRIT " : "")) + dp.dmg;
+      ctx.lineWidth = 3;
+      if (dp.ult) { ctx.strokeStyle = "#7a2fb0"; ctx.fillStyle = "#ffd86b"; }
+      else if (dp.superEff) { ctx.strokeStyle = "#2f7d3a"; ctx.fillStyle = "#bff5a0"; }
+      else if (dp.crit) { ctx.strokeStyle = "#a8521f"; ctx.fillStyle = "#f6c453"; }
+      else { ctx.strokeStyle = "#b23b3b"; ctx.fillStyle = "#fff"; }
+      var txt = (dp.label ? dp.label + " " : (dp.crit ? "CRIT " : dp.superEff ? "★" : "")) + dp.dmg;
       ctx.strokeText(txt, dp.x, dp.y); ctx.fillText(txt, dp.x, dp.y);
     }
     ctx.globalAlpha = 1;

@@ -44,6 +44,7 @@
       upgrades: { lures: 0, comfy: 0, assist: 0, team: 0, idle: 0, greed: 0, luck: 0 },
       pity: { sinceRare: 0, sinceEpic: 0 },
       quests: freshQuests(),
+      mastered: {},             // biomeId -> true once every native bug is caught
       stats: { caught: 0, dex: {}, battles: 0, merges: 0, pulls: 0, bestCombo: 0 },
       flags: { tutorial: false },
       lastDew: "",
@@ -72,6 +73,7 @@
       if (typeof data.upgrades[k] !== "number") data.upgrades[k] = 0;
     });
     data.pity = data.pity || { sinceRare: 0, sinceEpic: 0 };
+    data.mastered = data.mastered || {};
     data.stats = data.stats || { caught: 0, dex: {} };
     if (!data.stats.dex) data.stats.dex = {};
     ["caught", "battles", "merges", "pulls", "bestCombo"].forEach(function (k) { if (typeof data.stats[k] !== "number") data.stats[k] = 0; });
@@ -188,7 +190,7 @@
   };
   PB.teamAtk = function () {
     var base = 0; PB.teamBugs().forEach(function (b) { base += PB.bugAtk(b); });
-    return Math.max(1, Math.round(base * (1 + PB.teamBuffs().atkPct)));
+    return Math.max(1, Math.round(base * (1 + PB.teamBuffs().atkPct) * (1 + PB.masteryAtkBonus())));
   };
   PB.teamMaxHp = function () {
     var base = 0; PB.teamBugs().forEach(function (b) { base += PB.bugHp(b); });
@@ -198,6 +200,40 @@
   // ---- areas ---------------------------------------------------------------
   PB.area = function () { return PB.areas[PB.state.area]; };
   PB.areaWave = function () { return PB.state.wave[PB.area().id] || 1; };
+
+  // ---- elements ------------------------------------------------------------
+  // attacker vs defender: 1.5 super, 0.75 resisted, 1 otherwise (Bug always 1).
+  PB.elemMatch = function (atk, def) {
+    if (!atk || !def || atk === "bug" || def === "bug") return 1;
+    if (PB.elBeats[atk] === def) return 1.5;
+    if (PB.elBeats[def] === atk) return 0.75;
+    return 1;
+  };
+  // the team's element = the majority among its bugs (a tie stays neutral Bug).
+  PB.teamElement = function () {
+    var tally = {}, best = "bug", bestN = 0, ties = 0;
+    PB.teamBugs().forEach(function (b) { var e = PB.speciesById[b.sid].el || "bug"; tally[e] = (tally[e] || 0) + 1; });
+    for (var k in tally) { if (tally[k] > bestN) { bestN = tally[k]; best = k; ties = 1; } else if (tally[k] === bestN) ties++; }
+    return (bestN === 0 || ties > 1) ? "bug" : best;
+  };
+  PB.speciesEl = function (sid) { var s = PB.speciesById[sid]; return (s && s.el) || "bug"; };
+
+  // ---- biome mastery -------------------------------------------------------
+  PB.masteredCount = function () { var n = 0; for (var k in PB.state.mastered) if (PB.state.mastered[k]) n++; return n; };
+  PB.masteryAtkBonus = function () { return 0.03 * PB.masteredCount(); };
+  PB.biomeComplete = function (area) { return area.bugs.every(function (sid) { return PB.dexSeen(sid); }); };
+  // call after a catch/pull; returns a newly-mastered area (for a toast) or null
+  PB.checkMastery = function () {
+    for (var i = 0; i < PB.areas.length; i++) {
+      var a = PB.areas[i];
+      if (!PB.state.mastered[a.id] && PB.biomeComplete(a)) {
+        PB.state.mastered[a.id] = true;
+        PB.addGlimmer(30);
+        return a;
+      }
+    }
+    return null;
+  };
 
   // species reachable for capsule pulls (any unlocked area's bugs)
   PB.unlockedPool = function () {

@@ -21,6 +21,7 @@
 
     isBoss: function () { var a = PB.area(); return PB.areaWave() % a.waves === 0; },
     comboMult: function () { return (1 + Math.min(this.combo, 30) * 0.04) * (this.fx.frenzy > 0 ? 2 : 1); },
+    elemMult: function () { return PB.elemMatch(PB.teamElement(), PB.area().el); },
     critChance: function () { return PB.teamBuffs().crit; },
     hasMod: function (m) { return this.enemy && this.enemy.mods.indexOf(m) >= 0; },
 
@@ -80,12 +81,14 @@
       var crit = this.fx.focusCrits > 0 ? true : Math.random() < this.critChance();
       if (this.fx.focusCrits > 0) this.fx.focusCrits -= 1;
       var atk = PB.teamAtk() * (1 + this.fx.rallyAtk);
+      var em = this.elemMult();
       var dmg = Math.round(atk * this.comboMult() * (crit ? 2.4 : 1));
       if (this.hasMod("armored")) dmg = Math.max(1, Math.round(dmg * 0.5));
+      dmg = Math.max(1, Math.round(dmg * em));
       this._deal(dmg); e.hurt = crit ? 0.26 : 0.18; e.sinceTap = 0;
       this.ult = Math.min(100, this.ult + 6 + (crit ? 3 : 0));
       if (e.hp <= 0) this._defeat();
-      return { dmg: dmg, crit: crit, combo: this.combo, armored: this.hasMod("armored") };
+      return { dmg: dmg, crit: crit, combo: this.combo, armored: this.hasMod("armored"), superEff: em > 1, weakEff: em < 1 };
     },
 
     // ability for a team slot (by talent, or generic Rally)
@@ -104,7 +107,7 @@
       this.cds[slot] = a.cd;
       var res = { key: a.key, icon: a.icon, name: a.name };
       var e = this.enemy;
-      if (a.key === "smash") { var d = Math.round(PB.teamAtk() * 4); this._deal(d); e.hurt = 0.32; res.dmg = d; }
+      if (a.key === "smash") { var d = Math.round(PB.teamAtk() * 4 * this.elemMult()); this._deal(d); e.hurt = 0.32; res.dmg = d; }
       else if (a.key === "focus") { this.fx.focusCrits = 5; }
       else if (a.key === "mend") { var h = Math.round(PB.teamMaxHp() * 0.25); this.teamHp = Math.min(PB.teamMaxHp(), this.teamHp + h); res.heal = h; }
       else if (a.key === "guard") { this.fx.guard = 3; }
@@ -119,7 +122,7 @@
     ultimate: function () {
       this.ensure();
       if (this.ult < 100) return null;
-      var d = Math.round(PB.teamAtk() * 8);
+      var d = Math.round(PB.teamAtk() * 8 * this.elemMult());
       this._deal(d); this.enemy.hurt = 0.36;
       this.ult = 0; this.fx.frenzy = 3;
       PB.audio.ult();
@@ -150,7 +153,7 @@
       // idle team damage (NOT combo-scaled); fills ult slowly
       var idlePct = buffs.idlePct; if (f.overdrive > 0) idlePct *= 3; if (f.frenzy > 0) idlePct *= 2;
       idlePct = Math.min(idlePct, 3.0);
-      var idle = PB.teamAtk() * idlePct * dt;
+      var idle = PB.teamAtk() * idlePct * dt * this.elemMult();
       if (idle > 0) { this._deal(idle); this.ult = Math.min(100, this.ult + 1.5 * dt); if (e.hp <= 0) { this._defeat(); return; } }
       // enemy enrage ramp
       if (e.mods.indexOf("enrage") >= 0) e.enrageT += dt;
@@ -208,6 +211,7 @@
         mods: e.mods, boss: e.boss,
         teamHp: Math.max(0, Math.round(this.teamHp)), teamMax: PB.teamMaxHp(),
         wave: PB.areaWave(), combo: this.combo, ult: this.ult, frenzy: this.fx.frenzy > 0,
+        foeEl: PB.area().el, teamEl: PB.teamElement(), elemMult: this.elemMult(),
       };
     },
   };

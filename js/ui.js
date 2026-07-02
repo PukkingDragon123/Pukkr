@@ -34,6 +34,7 @@
       el.capOverlay = $("capsule-overlay"); el.capBody = $("capsule-body");
       el.shopOverlay = $("shop-overlay"); el.shopBody = $("shop-body");
       el.questOverlay = $("quests-overlay"); el.questBody = $("quests-body");
+      el.mapOverlay = $("map-overlay"); el.mapBody = $("map-body");
 
       el.catchOverlay.addEventListener("click", function () { if (PB.catching.isActive()) PB.catching.strike(); });
       $("result-ok").addEventListener("click", function () { el.result.classList.add("hidden"); PB.audio.select(); });
@@ -42,6 +43,9 @@
       $("capsule-close").addEventListener("click", function () { el.capOverlay.classList.add("hidden"); });
       $("shop-close").addEventListener("click", function () { el.shopOverlay.classList.add("hidden"); });
       $("quests-close").addEventListener("click", function () { el.questOverlay.classList.add("hidden"); });
+      $("map-close").addEventListener("click", function () { el.mapOverlay.classList.add("hidden"); });
+      $("area-name").addEventListener("click", function () { PB.ui.openMap(); });
+      el.mapBody.addEventListener("click", onMapClick);
       el.goalsBtn.addEventListener("click", function () { PB.ui.openQuests(); });
 
       el.baitBar.addEventListener("click", onBaitClick);
@@ -52,7 +56,7 @@
       el.questBody.addEventListener("click", onQuestClick);
       el.abilityRow.addEventListener("click", function (e) { var b = e.target.closest && e.target.closest("[data-ability]"); if (b) PB.main.useAbility(parseInt(b.getAttribute("data-ability"), 10)); });
       el.ultBtn.addEventListener("click", function () { PB.main.fireUlt(); });
-      [el.bugsOverlay, el.labOverlay, el.capOverlay, el.shopOverlay, el.questOverlay].forEach(function (o) { o.addEventListener("click", function (e) { if (e.target === o) o.classList.add("hidden"); }); });
+      [el.bugsOverlay, el.labOverlay, el.capOverlay, el.shopOverlay, el.questOverlay, el.mapOverlay].forEach(function (o) { o.addEventListener("click", function (e) { if (e.target === o) o.classList.add("hidden"); }); });
     },
 
     // ---- HUD + area --------------------------------------------------------
@@ -169,16 +173,49 @@
     },
 
     // ---- overlays ----------------------------------------------------------
-    anyOverlayOpen: function () { return [el.bugsOverlay, el.labOverlay, el.result, el.capOverlay, el.shopOverlay, el.questOverlay].some(function (o) { return !o.classList.contains("hidden"); }); },
+    anyOverlayOpen: function () { return [el.bugsOverlay, el.labOverlay, el.result, el.capOverlay, el.shopOverlay, el.questOverlay, el.mapOverlay].some(function (o) { return !o.classList.contains("hidden"); }); },
     isBlocking: function () { return this.anyOverlayOpen(); },
-    closeOverlays: function () { [el.bugsOverlay, el.labOverlay, el.result, el.capOverlay, el.shopOverlay, el.questOverlay].forEach(function (o) { o.classList.add("hidden"); }); },
+    closeOverlays: function () { [el.bugsOverlay, el.labOverlay, el.result, el.capOverlay, el.shopOverlay, el.questOverlay, el.mapOverlay].forEach(function (o) { o.classList.add("hidden"); }); },
 
     openBugs: function () { renderBugs(); el.bugsOverlay.classList.remove("hidden"); PB.audio.open(); },
     openLab: function () { labA = null; labB = null; renderLab(); el.labOverlay.classList.remove("hidden"); PB.audio.open(); },
     openCapsule: function () { renderCapsule(""); el.capOverlay.classList.remove("hidden"); PB.audio.open(); },
     openShop: function () { renderShop(); el.shopOverlay.classList.remove("hidden"); PB.audio.open(); },
     openQuests: function () { renderQuests(); el.questOverlay.classList.remove("hidden"); PB.audio.open(); },
+    openMap: function () { renderMap(); el.mapOverlay.classList.remove("hidden"); PB.audio.open(); },
   };
+
+  // element badge pill
+  function elBadge(elid) { var e = PB.elements[elid] || PB.elements.bug; return '<span class="el-badge" style="background:' + e.col + '">' + e.icon + " " + e.name + "</span>"; }
+  function elDot(elid) { var e = PB.elements[elid] || PB.elements.bug; return '<span class="el-dot" title="' + e.name + '" style="background:' + e.col + '">' + e.icon + "</span>"; }
+
+  // ---- world map -----------------------------------------------------------
+  function renderMap() {
+    var cur = PB.state.area;
+    var cards = PB.areas.map(function (a, i) {
+      var locked = i >= PB.state.unlocked;
+      var caught = a.bugs.filter(function (s) { return PB.dexSeen(s); }).length;
+      var wv = PB.state.wave[a.id] || 1, mastered = !!PB.state.mastered[a.id];
+      var e = PB.elements[a.el] || PB.elements.bug;
+      return '<div class="map-card' + (locked ? " locked" : "") + (i === cur ? " here" : "") + '" data-area="' + i + '" style="border-color:' + (locked ? "" : e.col) + '">' +
+        (mastered ? '<span class="map-master" title="Mastered!">🏅</span>' : "") +
+        (i === cur ? '<span class="map-here">HERE</span>' : "") +
+        '<div class="map-name">' + esc(a.name) + "</div>" +
+        elBadge(a.el) +
+        (locked ? '<div class="map-lock">🔒 Beat the previous boss</div>'
+          : '<div class="map-prog">Wave ' + Math.min(wv, a.waves) + "/" + a.waves + " · 🐛 " + caught + "/" + a.bugs.length + "</div>") +
+        "</div>";
+    }).join("");
+    el.mapBody.innerHTML = '<div class="section-note">Travel between biomes. Each has an <b>element</b> — match your team\'s element to hit for <b>×1.5</b>! Catch every bug in a biome to <b>master</b> it (permanent +3% team power).</div><div class="map-grid">' + cards + "</div>";
+  }
+  function onMapClick(e) {
+    var card = e.target.closest && e.target.closest("[data-area]");
+    if (!card) return;
+    var i = parseInt(card.getAttribute("data-area"), 10);
+    if (i >= PB.state.unlocked) { PB.ui.toast("🔒 Beat the boss to unlock " + PB.areas[i].name + "!", ""); PB.audio.nope(); return; }
+    el.mapOverlay.classList.add("hidden");
+    PB.main.goArea(i);
+  }
 
   // ---- bait slot markup ----------------------------------------------------
   function slotInner(i) {
@@ -215,14 +252,15 @@
     return '<div class="card bug-card' + (inTeam ? " in-team" : "") + (b.talent ? " sparkle" : "") + '" data-uid="' + b.uid + '">' +
       (inTeam ? '<span class="card-badge">TEAM</span>' : "") + tal + rarTag(b.sid) +
       '<div class="card-art"><img src="' + art(b.sid) + '" alt=""></div>' +
-      '<div class="card-name">' + esc(sp.name) + " " + stars(b.tier) + "</div>" +
+      '<div class="card-name">' + elDot(sp.el) + " " + esc(sp.name) + " " + stars(b.tier) + "</div>" +
       '<div class="card-sub">ATK ' + PB.bugAtk(b) + " · " + Math.round(b.size) + " mm</div>" +
       '<button class="card-reroll" data-reroll="' + b.uid + '" title="Re-roll talent (8 ✨)">🎲</button>' +
       '<button class="card-rel" data-rel="' + b.uid + '" title="Release for tokens">✕</button></div>';
   }
   function renderBugs() {
     el.bugsNote.innerHTML = "Tap a bug to add/remove it from your <b>team</b> (max " + PB.teamSize() + "). " +
-      "Team <b>" + PB.teamBugs().length + "/" + PB.teamSize() + "</b> · Power <b>" + PB.teamAtk() + "</b> · HP <b>" + PB.teamMaxHp() + "</b>. 🎲 re-roll talent (8 ✨), ✕ release.";
+      "Team <b>" + PB.teamBugs().length + "/" + PB.teamSize() + "</b> · Power <b>" + PB.teamAtk() + "</b> · HP <b>" + PB.teamMaxHp() + "</b> · Element " + elBadge(PB.teamElement()) +
+      "<br>Talents buff the team & give abilities. Match your team element to a biome for <b>×1.5</b> damage. 🎲 re-roll talent (8 ✨), ✕ release.";
     if (!PB.state.bugs.length) { el.bugsGrid.innerHTML = '<div class="empty-note">No bugs yet — go bait & catch some, or pull a capsule! 🎣</div>'; return; }
     var sorted = PB.state.bugs.slice().sort(function (a, c) { return PB.bugAtk(c) - PB.bugAtk(a); });
     el.bugsGrid.innerHTML = sorted.map(bugCard).join("");

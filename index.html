@@ -25,7 +25,7 @@
       <!-- Area selector -->
       <div id="area-bar" class="area-bar hidden">
         <button id="area-prev" class="area-arrow">◀</button>
-        <span id="area-name">Area</span>
+        <button id="area-name" class="area-name-btn" title="Open the World Map">Area</button>
         <button id="area-next" class="area-arrow">▶</button>
       </div>
 
@@ -115,6 +115,14 @@
         <div class="panel-window">
           <div class="panel-header">🛒 Upgrades <button class="panel-close" id="shop-close">✕</button></div>
           <div class="panel-body" id="shop-body"></div>
+        </div>
+      </div>
+
+      <!-- World Map -->
+      <div id="map-overlay" class="overlay hidden">
+        <div class="panel-window">
+          <div class="panel-header">🗺️ World Map <button class="panel-close" id="map-close">✕</button></div>
+          <div class="panel-body" id="map-body"></div>
         </div>
       </div>
 

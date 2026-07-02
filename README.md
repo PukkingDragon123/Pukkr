@@ -1,9 +1,14 @@
 # 🐛 Poke Bug
 
 A **cozy mobile-style idle & gacha RPG** about collecting bugs, painted in a soft,
-hand-drawn look. The loop is simple and addictive: **bait & catch (or pull a
-capsule) → build & merge your team → battle with combos, abilities & a SWARM
-ultimate → earn → upgrade → unlock new areas.**
+hand-drawn look with a **faux-3D** scene renderer. The loop is simple and
+addictive: **bait & catch (or pull a capsule) → build & merge your team →
+battle with combos, abilities, elements & a SWARM ultimate → earn → upgrade →
+travel the world map and unlock 9 biomes.**
+
+The scenes are drawn with a graded sky, a sun & god-rays, hills receding into
+fog, a **perspective ground plane**, themed props with contact shadows, and
+multi-layer pointer-parallax — so a flat canvas reads with real depth.
 
 - 🎣 **Catch** — set **fruit bait** in your **lure slots** and wait for a bug
   (skip the wait with 🎟️ **tokens**). Bugs come in **different sizes**, and rare
@@ -22,6 +27,14 @@ ultimate → earn → upgrade → unlock new areas.**
   team **abilities** on cooldown; charge and unleash the **SWARM** ultimate.
   Read each foe's **modifiers** (🛡️ Armored, 😤 Enrage, 💚 Regen, 🔵 Shielded,
   💨 Swift) and pick your tactic. Beat the **boss** to **unlock the next area**.
+- 🌿 **Elements** — six cozy types in a ring (🌿 Grass ▸ 💧 Water ▸ 🔥 Fire ▸
+  🪨 Rock ▸ ⚡ Bolt ▸ Grass, plus neutral 🐛 Bug). Your **team's element** is its
+  majority; match it to a biome's element to hit for **×1.5** (mismatched is a
+  gentle ×0.75, never punishing).
+- 🗺️ **World Map** — travel between **9 biomes** (Woods, Beach, Grove, Reef,
+  Crystal Cavern, Emberpeak, Frostpine Tundra, Mistmarsh, Thunder Dunes), each
+  with its own look, element and creatures. Catch **every** bug in a biome to
+  **master** it for a permanent **+3% team power**.
 - ⚗️ **Lab** — **merge** two of the same species into one bigger, stronger bug
   (with a live result **preview**). 🛒 **Shop** — spend 🎟️ on permanent
   **upgrades** (more lure slots, comfy bait, catch assist, team size, idle power,
@@ -71,11 +84,11 @@ index.html        # entry point; loads everything
 css/style.css     # the cozy look
 assets/{creatures,jars}/   # the five hand-drawn creatures
 js/
-  data.js         # content: species, rarities, talents, abilities, mods, fruits, upgrades, quests, areas
-  sprites.js      # procedural creature sprites (non-hand-drawn species)
+  data.js         # content: species, elements, rarities, talents, abilities, mods, fruits, upgrades, quests, 9 biomes
+  sprites.js      # procedural creature sprites: grub/crab/shrimp/beetle/moth/mantis/firefly/spider
   art.js          # registry/loader + drawing for the hand-drawn art
-  scene.js        # painterly area backgrounds + 2.5D parallax + foliage
-  state.js        # save state, currencies, upgrades, pity, team buffs/power, offline catch-up
+  scene.js        # faux-3D renderer: sky+sun+god-rays, hills, perspective ground, themed props, parallax
+  state.js        # save state, currencies, upgrades, pity, elements, biome mastery, team power, offline
   bait.js         # multi-lure fruit bait: timers, token skip, spawn roll
   catching.js     # the forgiving shrinking-bar catch mini-game
   collection.js   # minting caught/pulled bugs · dex · releasing for tokens
@@ -93,6 +106,6 @@ js/
 This is a **non-commercial fan project** made for fun. Pokémon and all related
 names are © Nintendo / Creatures Inc. / GAME FREAK inc. The five hand-drawn
 creatures (Caterpie, Weedle, Paras, Shuckle and Wimpod) use original painterly
-art; the other species and the area backgrounds are drawn procedurally. No
-original game assets are used. There is no real-money purchase of any kind — both
-currencies are fully earned by playing.
+art; the other 13 species and every biome background are drawn **procedurally**
+(no image assets). No original game assets are used. There is no real-money
+purchase of any kind — both currencies are fully earned by playing.

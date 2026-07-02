@@ -669,6 +669,24 @@ button:disabled { opacity: 0.45; cursor: not-allowed; filter: grayscale(0.5); }
 .lab-go { padding: 12px 18px !important; font-size: 15px !important; }
 .lab-go:disabled { opacity: .5; }
 
+/* ---- Elements ------------------------------------------------------------ */
+.el-badge { display: inline-flex; align-items: center; gap: 3px; border: 2px solid var(--border); border-radius: 999px; padding: 1px 8px; font-size: 11px; font-weight: 800; color: #2a2318; vertical-align: middle; }
+.el-dot { display: inline-flex; align-items: center; justify-content: center; border: 2px solid var(--border); border-radius: 999px; width: 19px; height: 19px; font-size: 10px; vertical-align: middle; }
+
+/* ---- World Map ----------------------------------------------------------- */
+.area-name-btn { background: transparent; border: none; font-family: inherit; font-weight: 800; font-size: 15px; color: var(--ink); cursor: pointer; min-width: 150px; text-align: center; padding: 2px 6px; border-radius: 999px; }
+.area-name-btn:hover { color: var(--leaf-dk); background: var(--cream); }
+.map-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.map-card { position: relative; background: var(--cream); border: 3px solid var(--border); border-radius: 14px; padding: 12px 10px; box-shadow: 0 3px 0 var(--shadow); cursor: pointer; text-align: center; transition: transform .1s; }
+.map-card:hover:not(.locked) { transform: translateY(-3px); }
+.map-card.locked { opacity: .6; filter: grayscale(.6); cursor: not-allowed; }
+.map-card.here { box-shadow: 0 0 0 3px var(--honey), 0 3px 0 var(--shadow); }
+.map-name { font-weight: 800; font-size: 14px; margin-bottom: 6px; }
+.map-card .el-badge { margin: 0 auto; }
+.map-prog, .map-lock { font-size: 11px; color: var(--ink-soft); margin-top: 7px; }
+.map-here { position: absolute; top: -8px; left: 50%; transform: translateX(-50%); background: var(--honey); border: 2px solid var(--border); border-radius: 999px; font-size: 9px; font-weight: 800; padding: 0 6px; }
+.map-master { position: absolute; top: -10px; right: -6px; font-size: 18px; }
+
 /* ---- Responsiveness ------------------------------------------------------ */
 @media (max-width: 640px) {
   .hud-pill { font-size: 12px; padding: 4px 10px 4px 6px; }
